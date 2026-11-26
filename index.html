@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ETCS Mode Workflow Diagrams — SRT ST6 (Level 1 / Level 0)</title>
+  <style>
+    :root {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --content: #f1f5f9;
+      --border: #cbd5e1;
+      --foreground: #0f172a;
+      --muted-foreground: #475569;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --success: #16a34a;
+      --warning: #d97706;
+      --error: #dc2626;
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --background: #0b1120;
+        --card: #111827;
+        --content: #1e293b;
+        --border: #334155;
+        --foreground: #f1f5f9;
+        --muted-foreground: #94a3b8;
+        --primary: #60a5fa;
+        --primary-foreground: #0b1120;
+        --success: #4ade80;
+        --warning: #fbbf24;
+        --error: #f87171;
+        color-scheme: dark;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --background: #0b1120;
+      --card: #111827;
+      --content: #1e293b;
+      --border: #334155;
+      --foreground: #f1f5f9;
+      --muted-foreground: #94a3b8;
+      --primary: #60a5fa;
+      --primary-foreground: #0b1120;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --error: #f87171;
+      color-scheme: dark;
+    }
+
+    :root[data-theme="light"] {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --content: #f1f5f9;
+      --border: #cbd5e1;
+      --foreground: #0f172a;
+      --muted-foreground: #475569;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --success: #16a34a;
+      --warning: #d97706;
+      --error: #dc2626;
+      color-scheme: light;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: 'Noto Sans Thai', 'Sarabun', 'Thonburi', 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .font-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .header-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @media (min-width: 960px) {
+      .header-card {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background-color: var(--content);
+      color: var(--foreground);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .pill-muted {
+      color: var(--muted-foreground);
+    }
+
+    h1 {
+      margin: 4px 0 2px;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--foreground);
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background-color: var(--content);
+      color: var(--foreground);
+      cursor: pointer;
+      transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      opacity: 0.88;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .btn-sm {
+      min-height: 32px;
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .btn.is-active {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      border-color: var(--primary);
+    }
+
+    .counter-text {
+      font-size: 12px;
+      color: var(--muted-foreground);
+      padding: 0 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Tabs Bar: horizontal swipe on mobile, wrap on desktop */
+    .tabs-bar {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      padding-bottom: 4px;
+    }
+
+    @media (min-width: 768px) {
+      .tabs-bar {
+        flex-wrap: wrap;
+        overflow-x: visible;
+        padding-bottom: 0;
+      }
+    }
+
+    .tab-btn {
+      min-height: 36px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .tab-btn[aria-selected="true"] {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      border-color: var(--primary);
+    }
+
+    .tab-btn[aria-selected="false"] {
+      background-color: var(--card);
+      color: var(--foreground);
+      border-color: var(--border);
+    }
+
+    .tab-btn[aria-selected="false"]:hover {
+      background-color: var(--content);
+    }
+
+    /* Case Banner */
+    .case-banner {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @media (min-width: 820px) {
+      .case-banner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .case-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--foreground);
+    }
+
+    .case-params {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    /* Diagram Toolbar & Canvas */
+    .diagram-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .diagram-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .zoom-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .zoom-label {
+      font-size: 12px;
+      color: var(--muted-foreground);
+      margin-right: 2px;
+    }
+
+    .mobile-hint {
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+
+    .diagram-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+    }
+
+    .diagram-scroll svg {
+      display: block;
+      height: auto;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .svg-node {
+      cursor: pointer;
+      transition: opacity 0.12s ease;
+    }
+
+    .svg-node:focus {
+      outline: none;
+    }
+
+    .svg-node .node-ring {
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .svg-node:hover .node-ring,
+    .svg-node:focus-visible .node-ring {
+      opacity: 0.45;
+    }
+
+    .svg-node.is-selected .node-ring {
+      opacity: 1;
+    }
+
+    /* Legend */
+    .legend {
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 18px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      border: 2px solid;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .dash-swatch {
+      width: 20px;
+      border-top: 2px dashed var(--muted-foreground);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .footnote {
+      font-size: 12px;
+      color: var(--muted-foreground);
+      background-color: var(--content);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 12px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Mobile jump pill */
+    .jump-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      background-color: var(--content);
+      border: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    @media (min-width: 768px) {
+      .jump-bar {
+        display: none;
+      }
+    }
+
+    /* Inspector Panel */
+    .inspector-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .inspector-card.is-highlighted {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .inspector-head {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    @media (min-width: 680px) {
+      .inspector-head {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .inspector-title-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mode-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--foreground);
+    }
+
+    .inspector-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 768px) {
+      .inspector-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .info-box {
+      background-color: var(--content);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .info-box h4 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--foreground);
+      letter-spacing: 0.02em;
+    }
+
+    .info-box ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .refs-row {
+      font-size: 12px;
+      color: var(--muted-foreground);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Header -->
+    <header class="card header-card">
+      <div>
+        <div class="badge-row font-mono">
+          <span class="pill">UNISIG SUBSET-026-4 / -5</span>
+          <span class="pill">SRT ST6 • NID_C = 832</span>
+          <span>ETCS Level 1 / Level 0 • Trainguard 100 &amp; QSY</span>
+        </div>
+        <h1>ไดอะแกรมเวิร์กโฟลว์โหมดการทำงานของ ETCS (M_MODE) แยกตามกรณี</h1>
+        <p class="subtitle">เลือกแท็บกรณีด้านล่าง แล้วแตะที่กล่องโหมดหรือจุดตัดสินใจในแผนภาพเพื่อดูเงื่อนไขเข้า-ออก ค่าพารามิเตอร์ ST6/QSY และข้อกำหนดอ้างอิง</p>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggleBtn" type="button" class="btn" aria-label="สลับธีมสว่างหรือมืด">
+          🌙 ธีมมืด
+        </button>
+        <button id="prevCaseBtn" type="button" class="btn">
+          ← กรณีก่อนหน้า
+        </button>
+        <span id="caseCounter" class="counter-text font-mono">1 / 8</span>
+        <button id="nextCaseBtn" type="button" class="btn">
+          กรณีถัดไป →
+        </button>
+      </div>
+    </header>
+
+    <!-- Tabs Bar -->
+    <nav aria-label="เลือกกรณีเวิร์กโฟลว์ ETCS" class="tabs-bar" id="tabsBar" role="tablist"></nav>
+
+    <!-- Case Overview Banner -->
+    <section class="card case-banner">
+      <div>
+        <div class="case-title-row">
+          <h2 id="caseTitle"></h2>
+          <span id="caseLevels" class="pill font-mono"></span>
+        </div>
+        <p id="caseObjective" class="subtitle" style="margin-top:4px;"></p>
+      </div>
+      <div id="caseParams" class="case-params font-mono"></div>
+    </section>
+
+    <!-- SVG Diagram Card -->
+    <section class="card diagram-card">
+      <div class="diagram-toolbar">
+        <div class="zoom-controls" aria-label="ควบคุมการซูมแผนภาพ">
+          <span class="zoom-label">ซูมแผนภาพ:</span>
+          <button id="zoomOutBtn" type="button" class="btn btn-sm" aria-label="ย่อแผนภาพ">−</button>
+          <button id="zoomFitBtn" type="button" class="btn btn-sm">พอดีจอ (Fit)</button>
+          <button id="zoom100Btn" type="button" class="btn btn-sm">100%</button>
+          <button id="zoomInBtn" type="button" class="btn btn-sm" aria-label="ขยายแผนภาพ">+</button>
+          <span id="zoomStatus" class="counter-text font-mono"></span>
+        </div>
+        <span class="mobile-hint">เลื่อนซ้าย-ขวาเพื่อดูแผนภาพ • แตะที่กล่องเพื่อดูรายละเอียด</span>
+      </div>
+
+      <div class="diagram-scroll" id="diagramHost"></div>
+
+      <div class="jump-bar">
+        <span id="jumpLabel" class="subtitle" style="color: var(--foreground);">กำลังแสดงรายละเอียดโหมดด้านล่าง</span>
+        <button id="jumpToInspectorBtn" type="button" class="btn btn-sm is-active">ดูรายละเอียด ↓</button>
+      </div>
+
+      <!-- Compact Legend -->
+      <div class="legend">
+        <span style="font-weight:700; color:var(--foreground);">สัญลักษณ์:</span>
+        <span class="legend-item">
+          <span class="swatch" style="border-color: var(--success); background: color-mix(in srgb, var(--success) 14%, var(--card));"></span>
+          <span>ควบคุมเต็มรูปแบบ (FS)</span>
+        </span>
+        <span class="legend-item">
+          <span class="swatch" style="border-color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, var(--card));"></span>
+          <span>โหมดเดินรถ / ปกติ</span>
+        </span>
+        <span class="legend-item">
+          <span class="swatch" style="border-color: var(--warning); background: color-mix(in srgb, var(--warning) 14%, var(--card));"></span>
+          <span>เตือน / ต้อง Ack / Override / สับเปลี่ยน</span>
+        </span>
+        <span class="legend-item">
+          <span class="swatch" style="border-color: var(--error); background: color-mix(in srgb, var(--error) 14%, var(--card));"></span>
+          <span>Trip / EB / ขัดข้อง / ตัดระบบ</span>
+        </span>
+        <span class="legend-item">
+          <span class="swatch" style="border-color: var(--muted-foreground); background: var(--content);"></span>
+          <span>รอเตรียมการ / พ่วงพหุ</span>
+        </span>
+        <span class="legend-item">
+          <span class="dash-swatch"></span>
+          <span>ทางเลือก / กรณีพิเศษ / กู้คืน</span>
+        </span>
+        <span class="font-mono" style="color:var(--foreground);">[n] = เงื่อนไข UNISIG SUBSET-026-4 §4.6.3</span>
+      </div>
+
+      <div id="tabFootNote" class="footnote hidden"></div>
+    </section>
+
+    <!-- Interactive Node Inspector Panel -->
+    <section id="inspectorPanel" class="card inspector-card" aria-live="polite">
+      <div class="inspector-head">
+        <div class="inspector-title-wrap">
+          <span id="inspBadge" class="mode-badge font-mono"></span>
+          <div>
+            <h3 id="inspTitle"></h3>
+            <p id="inspSubtitle" class="subtitle"></p>
+          </div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <span id="inspProv" class="pill font-mono"></span>
+          <span id="inspLevels" class="pill pill-muted font-mono"></span>
+        </div>
+      </div>
+
+      <div class="inspector-grid">
+        <div class="info-box">
+          <h4>เงื่อนไขเข้า (Entry Conditions)</h4>
+          <ul id="inspEntry"></ul>
+        </div>
+        <div class="info-box">
+          <h4>การควบคุม &amp; พารามิเตอร์ ST6/QSY</h4>
+          <ul id="inspSup"></ul>
+        </div>
+        <div class="info-box">
+          <h4>ทางออก / โหมดถัดไป (Exit Transitions)</h4>
+          <ul id="inspExit"></ul>
+        </div>
+      </div>
+
+      <div class="refs-row">
+        <span style="font-weight:700; color:var(--foreground);">ข้อกำหนดอ้างอิง:</span>
+        <span id="inspRefs" class="font-mono"></span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      const NODE_DETAILS = {
+        NP: {
+          code: 'NP',
+          title: 'No Power — ไม่มีไฟเลี้ยงระบบ ETCS',
+          subtitle: 'สถานะปิดเบรกเกอร์หลัก / ก่อนเปิดระบบ (Cold / Powered Off)',
+          tone: 'error',
+          provenance: 'standard + QSY manual',
+          levels: 'Level 0, Level 1 (All Levels)',
+          entry: [
+            'ระบบ ETCS บนรถจักรไม่ได้รับไฟเลี้ยง หรือปิดสวิตช์หลัก / ATPB ([29])',
+            'เข้าได้จากทุกโหมดที่มี Priority สูงเป็นอันดับ 2 (-p2-) รองจาก Isolation'
+          ],
+          supervision: [
+            'EVC สั่ง Emergency Brake (EB) ค้างตลอดเวลาแบบ Fail-safe',
+            'รองรับ Cold Movement Detection (ตัวเลือกตามมาตรฐาน)',
+            'บนรถจักร QSY หลัง On ATPB ระบบยังสั่ง EB ค้าง ~80 วินาทีเพื่อตรวจสอบระบบ ก่อนปลดให้เข้า SB'
+          ],
+          exit: [
+            'จ่ายไฟเข้าระบบ ETCS ([4]) → เข้าโหมด SB (Stand By) อัตโนมัติ',
+            'บิดกุญแจ Isolation Switch ([1]) → ตัดเข้าโหมด IS'
+          ],
+          refs: 'SUBSET-026-4 v3.6.0 §4.4.4, §4.6.2–4.6.3 [4][29] • SRT ST6 §5.1.2 • ตารางสรุป QSY SOM §1.1–1.7'
+        },
+        SB: {
+          code: 'SB',
+          title: 'Stand By — รอเตรียมการ / Start of Mission',
+          subtitle: 'โหมดเริ่มต้นหลังเปิดระบบหรือปิดห้องขับ',
+          tone: 'neutral',
+          provenance: 'standard + ST6 spec + QSY manual',
+          levels: 'Level 0, Level 1 (All Levels)',
+          entry: [
+            'จ่ายไฟเข้าระบบจาก NP ([4])',
+            'ปิดห้องขับ (Desk Closure) จากโหมดเดินรถต่างๆ ([28])',
+            'กดออกจาก Shunting ([19]), Stop Non-Leading ([47]) หรือออกจาก Sleeping ([2][3])'
+          ],
+          supervision: [
+            'ทำ Standstill Supervision (ห้ามเคลื่อนรถ): รถไหลเกิน D_NVROLL = 2 m ระบบสั่ง EB',
+            'ทำ Start of Mission (SOM): Cab Activation → Driver ID → เลือก Level → Brake Test (QSY สั่ง EB 2 ครั้ง ต้อง Reset ภายใน 1 นาที/ครั้ง) → ป้อน Train Data & Train Number'
+          ],
+          exit: [
+            'กด Start + ยืนยัน (Ack) ใน L1 ([8]) → เข้า SR (หรือเข้า FS ทันทีถ้ามี MA+SSP+Gradient ครบ [10])',
+            'กด Start + ยืนยัน (Ack) ใน L0 ([60]) → เข้า UN',
+            'เลือก Shunting ([5]) → เข้า SH | เลือก Non-Leading + NL Signal ([46]) → เข้า NL',
+            'ปิดทุกห้องขับ + สัญญาณ Sleeping ([14]) → เข้า SL'
+          ],
+          refs: 'SUBSET-026-4 §4.4.7, §4.6.3 [2][3][4][5][8][10][14][19][28][46][47][60] • SUBSET-026-5 §5.4 • SRT ST6 §5.1.5, App.1 • QSY SOM Part 1–3'
+        },
+        SR: {
+          code: 'SR',
+          title: 'Staff Responsible — เดินรถภายใต้ความรับผิดชอบ พขร.',
+          subtitle: 'เดินรถในเขต ETCS L1 เมื่อยังไม่มี MA หรือหลัง Override / Post Trip',
+          tone: 'primary',
+          provenance: 'standard + ST6 spec + QSY manual',
+          levels: 'Level 1 (รองรับ L1/L2/L3)',
+          entry: [
+            'กด Start + Ack ใน L1 หลังทำ SOM จาก SB หรือหลังออกจาก PT ([8]) — บน QSY กดค้างปุ่ม SR 3 วินาที',
+            'ทำ Override EOA จาก FS/OS/PT/SB ขณะรถจอดสนิท ([37])'
+          ],
+          supervision: [
+            'เพดานความเร็ว ST6: V_NVSTFF = 25 km/h | ระยะทาง ST6: D_NVSTFF = ∞ (32767) แก้ค่าได้เฉพาะตอนจอดสนิท',
+            'คุมถอยหลัง (Reverse Movement Protection) D_NVROLL = 2 m',
+            'หากผ่าน Balise ที่มีคำสั่ง "Stop if in SR" ([54]) → Trip ทันที',
+            'พขร. รับผิดชอบดูทางว่าง ประแจ และเสาสัญญาณข้างทางทั้งหมด'
+          ],
+          exit: [
+            'รับ MA + SSP + Gradient ครบจาก Balise ([32]) → เข้า FS อัตโนมัติ',
+            'รับ Mode Profile OS ([40]) → เข้า OS | ข้ามเขตออก L0 ([21]) → เข้า UN',
+            'จอดสนิทเลือก SH ([5]) / NL ([46]) / ปิดห้องขับ ([28]) → SB',
+            'ฝ่าคำสั่ง "Stop if in SR" ([54]) / เกินระยะ ([42]) / ผิดทิศ ([66]) → TR'
+          ],
+          refs: 'SUBSET-026-4 §4.4.11, §4.6.3 [8][21][32][37][40][42][54][66] • SRT ST6 §5.1.9, App.1 • PRO-9018 §8.4.1, §9.2.2'
+        },
+        FS: {
+          code: 'FS',
+          title: 'Full Supervision — ควบคุมการเดินรถเต็มรูปแบบ',
+          subtitle: 'เข้าอัตโนมัติเท่านั้นเมื่อมี MA + SSP + Gradient ครบจากหัวขบวน',
+          tone: 'success',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 1 (รองรับ L1/L2/L3)',
+          entry: [
+            'เข้าอัตโนมัติ (พขร. เลือกเองไม่ได้) จาก SR, OS ([32]) หรือจาก UN เมื่อข้ามเข้าเขต L1 ([25])',
+            'เงื่อนไข: มี Train Data ถูกต้อง และได้รับ MA + SSP + Gradient ตั้งแต่หัวขบวนไปข้างหน้า'
+          ],
+          supervision: [
+            'คำนวณ Dynamic Speed Profile ครบ 3 ช่วง: CSM (W/SB/EB), TSM (เข้าเป้า EOA/SvL), RSM (V_NVREL = 25 km/h เกินสั่ง EB ทันที)',
+            'หากความยาวท้ายขบวนยังไม่ครอบคลุมด้วย SSP/Gradient จะแสดง "ENTRY TO FULL SUPERVISION" (ID 273) ให้ พขร. คุมส่วนท้ายเองจนข้อความดับ',
+            'แสดง Permitted Speed, Target Speed, Target Distance และ Release Speed บน DMI'
+          ],
+          exit: [
+            'เข้าเขต Emergency Call-On / Mode Profile OS ([15]/[40]) → ต้อง Ack ภายใน 5 วินาที → OS',
+            'ถึงป้ายออกเขต L1→L0 ([21]) → กด Ack ภายใน 5 วินาที → UN',
+            'จอดสนิทกด Override EOA ([37]) → SR | เลือก SH ([5]) / NL ([46]) / RV ([59])',
+            'ฝ่า EOA/เสาแดง ([12]) หรือ Balise Trip ([18]) หรือ Linking Trip ([17]) → TR'
+          ],
+          refs: 'SUBSET-026-4 §4.4.9, §4.6.3 [12][15][17][18][21][25][32][37][40][59] • SRT ST6 §2.1, §5.1.7, App.1 • PRO-9018 §9.4, §10.2'
+        },
+        OS: {
+          code: 'OS',
+          title: 'On Sight — เดินรถด้วยสายตา (Call-On)',
+          subtitle: 'เข้าสู่ตอนทางที่อาจมีขบวนรถอื่นหรือสิ่งกีดขวางอยู่ข้างหน้า',
+          tone: 'warning',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 1 (รองรับ L1/L2/L3)',
+          entry: [
+            'สั่งโดย Trackside เท่านั้น (พขร. เลือกเองไม่ได้) — บน ST6 ใช้กับสัญญาณ Emergency Call-On',
+            'พขร. ต้องกด Ack ภายใน T_AMT = 5 s เมื่อ DMI แจ้ง (ID 258) ([15]/[34]/[40]) มิฉะนั้นระบบสั่ง Service Brake'
+          ],
+          supervision: [
+            'เพดานความเร็ว ST6: V_NVONSIGHT = 25 km/h ร่วมกับ Dynamic Speed Profile',
+            'หากท้ายขบวนยังไม่พ้นเข้าเขต OS จะขึ้น "ENTRY TO ON-SIGHT" (ID 274)',
+            'พขร. รับผิดชอบตรวจทางข้างหน้าด้วยสายตาและหยุดก่อนสิ่งกีดขวางเอง'
+          ],
+          exit: [
+            'พ้นเขต OS และได้รับ MA ปกติ ([32]) → กลับเข้า FS อัตโนมัติ',
+            'Override EOA ([37]) → SR | ข้ามเขต L0 ([21]) → UN | จอดเลือก SH ([5]) / RV ([59])',
+            'ฝ่า EOA ([12]) หรือรับคำสั่ง Trip ([18]) → TR'
+          ],
+          refs: 'SUBSET-026-4 §4.4.12, §4.6.3 [15][32][34][40] • SUBSET-026-5 §5.9 • SRT ST6 §2.1.2, §5.1.10, App.1–2 • PRO-9018 §9.4.2'
+        },
+        UN: {
+          code: 'UN',
+          title: 'Unfitted — เดินรถในเขตที่ไม่มี ETCS (Level 0)',
+          subtitle: 'พื้นที่นอกเขต ETCS หรือพื้นที่ที่ยังไม่ได้เปิดใช้งาน ETCS ข้างทาง',
+          tone: 'primary',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 0 เท่านั้น',
+          entry: [
+            'ทำ SOM โดยเลือก Level 0 แล้วกด Start + Ack ([60])',
+            'วิ่งออกจากเขต Level 1 เข้า Level 0 ([21]) — บน ST6 แจ้งล่วงหน้า ~400 m และต้อง Ack ภายใน T_AMT = 5 s',
+            'กด Ack ออกจาก TR ใน Level 0 เมื่อมี Train Data ([62])'
+          ],
+          supervision: [
+            'คุมเพดานความเร็วต่ำสุดระหว่าง Vmax รถ กับ V_NVUNFIT = 120 km/h (ST6) และ TSR (ถ้ามี)',
+            'คุมรถไหล/ถอยหลัง (D_NVROLL = 2 m)',
+            'พขร. ต้องสังเกตเสาสัญญาณข้างทางและรับผิดชอบการเดินรถทั้งหมด'
+          ],
+          exit: [
+            'ผ่าน Balise Transition L0→L1 แล้วได้ MA+SSP+Gradient ([25]) → FS (หรือ OS [34] / SH [61] / Override→SR [44])',
+            'จอดสนิทเลือก SH ([5]) / ปิดห้องขับ ([28]) → SB',
+            'รับ Trip Order / UES ([20]/[67]) → TR'
+          ],
+          refs: 'SUBSET-026-4 §4.4.10, §4.6.3 [21][25][34][44][60][61][62][67] • SRT ST6 §4.1, §4.4, §5.1.8, App.1 • PRO-9018 §9.2.1, §9.7–9.8'
+        },
+        SH: {
+          code: 'SH',
+          title: 'Shunting — โหมดสับเปลี่ยน',
+          subtitle: 'เดินรถสับเปลี่ยนในย่านหรือสถานี (เดินหน้า/ถอยหลังได้)',
+          tone: 'warning',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 0, Level 1 (All Levels)',
+          entry: [
+            'พขร. เลือกเองผ่านเมนู Mode → Shunting ขณะรถจอดสนิท (v = 0) ([5]) จาก SB, FS, OS, SR, UN, PT',
+            'บน ST6 ทางฝั่ง Trackside ไม่สั่งเข้า SH อัตโนมัติ ต้องปฏิบัติตามระเบียบเดินรถแล้ว พขร. กดเลือกเอง (ไม่บังคับป้อน Train Data)'
+          ],
+          supervision: [
+            'เพดานความเร็ว ST6: V_NVSHUNT = 25 km/h (ตั้ง 25 km/h เพื่อให้เสียงเตือนดังที่ 25 km/h)',
+            'ไม่ติด Reverse Movement Protection (ขับถอยหลังสับเปลี่ยนได้) และระงับ Level Transition ชั่วคราว',
+            'Trip ทันทีหากผ่าน Balise ที่มีคำสั่ง "Stop if in Shunting" ([49]) — เช่น Balise เสา Outer Home/Home ทิศย้อนออกย่านบน ST6'
+          ],
+          exit: [
+            'จอดสนิทกด Stop/Exit Shunting ([19]) → กลับ SB (ST6 §5.1.6 กำหนดให้ออกจาก SH แล้วเข้า SR ก่อนถึงเสาสัญญาณ ETCS ต้นแรก)',
+            'ปิดห้องขับ ([27]/[30]) → SB | เลือก NL ([46]) → NL',
+            'ผ่าน Balise "Stop if in Shunting" ([49]) หรือ Balise นอกรายการ ([52]) → TR'
+          ],
+          refs: 'SUBSET-026-4 §4.4.8, §4.6.3 [5][19][49][52] • SRT ST6 §5.1.6, App.1 • PRO-9018 §8.3.7–8.3.8, §9.2.3, §9.4.4'
+        },
+        RV: {
+          code: 'RV',
+          title: 'Reversing — โหมดถอยหลังฉุกเฉิน (จากห้องขับเดิม)',
+          subtitle: 'ถอยออกจากพื้นที่อันตราย เช่น อุโมงค์/สะพานยาว โดยไม่เปลี่ยนหัวขับ',
+          tone: 'warning',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 1 (รองรับ L1/L2/L3)',
+          entry: [
+            'อยู่โหมด FS/OS ในพื้นที่ที่ Trackside ส่งอนุญาต Reversing และรถจอดสนิท (v = 0)',
+            'DMI แสดง REVERSING IS POSSIBLE (ID 285) → พขร. ตั้งคันกลับอาการท่าถอย → กด Ack (ID 261) ([59])'
+          ],
+          supervision: [
+            'คุมความเร็วถอยหลังและระยะถอยสูงสุดตามค่าที่ Trackside ส่งมา',
+            'กลับทิศ Reverse Movement Protection: ห้ามเคลื่อนไปข้างหน้า',
+            'หากถอยเกินระยะที่อนุญาต หรือความเร็วเกินขีด SBI → EVC สั่ง Emergency Brake (EB) ทันทีแทน SB (§4.4.18.1.3b, .1.6)'
+          ],
+          exit: [
+            'เมื่อถอยพ้นเขตอันตรายและจอดสนิท ปิดห้องขับ ([28]) → กลับ SB เพื่อเริ่ม Start of Mission ใหม่',
+            'ตัดไฟ ([29]) → NP | บิดกุญแจ ([1]) → IS'
+          ],
+          refs: 'SUBSET-026-4 §4.4.18, §4.6.3 [28][59] • SRT ST6 §5.1.15 • PRO-9018 §8.4.5, §9.4.5'
+        },
+        TR: {
+          code: 'TR',
+          title: 'Trip — เหตุฝ่าสัญญาณ / คำสั่งหยุดฉุกเฉิน',
+          subtitle: 'EVC สั่ง Emergency Brake ค้างจนกว่าจะหยุดนิ่งและ พขร. กดรับทราบ',
+          tone: 'error',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 0, Level 1 (All Levels)',
+          entry: [
+            'ฝ่า EOA / เสาสัญญาณท่าห้ามใน L1 ([12]) หรือ Balise ส่ง Trip Order ([18])',
+            'ฝ่าคำสั่ง "Stop if in SR" ([54]) / "Stop if in Shunting" ([49]) / เกินระยะ SR ([42])',
+            'Linking error ตั้งค่า Reaction เป็น Trip ([17]), ผ่าน Balise ผิดทิศ ([66]) หรือ UES ([20])'
+          ],
+          supervision: [
+            'สั่ง Emergency Brake (EB) ค้างตลอดเวลา **ไม่สามารถปลดเบรกได้** จนกว่าจะออกจาก TR',
+            'แสดงสาเหตุการ Trip บน DMI (เช่น ID 330 / 265)',
+            'การปิดห้องขับขณะอยู่ TR จะไม่ทำให้หลุดจากโหมด TR (§4.4.13.1.6)'
+          ],
+          exit: [
+            'รถหยุดสนิท (v = 0) + พขร. กดปุ่ม Ack Train Trip (ID 265):',
+            '• ใน Level 1 ([7]) → เข้าโหมด PT (Post Trip) ทันทีและปลดคำสั่ง EB ของ EVC',
+            '• ใน Level 0 → เข้า UN (มี Train Data [62]) หรือ SH (ไม่มี Train Data [68])'
+          ],
+          refs: 'SUBSET-026-4 §4.4.13, §4.6.3 [7][12][17][18][20][42][49][54][62][66][68] • SUBSET-026-5 §5.11 • SRT ST6 §5.1.11 • PRO-9018 §9.5.1–9.5.3'
+        },
+        PT: {
+          code: 'PT',
+          title: 'Post Trip — สถานะหลังรับทราบการ Trip (L1)',
+          subtitle: 'ปลดเบรกฉุกเฉินแล้ว แต่จำกัดการเคลื่อนที่อย่างเข้มงวด',
+          tone: 'error',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 1 (รองรับ L1/L2/L3)',
+          entry: [
+            'อัตโนมัติทันทีหลังรถหยุดสนิทและ พขร. กด Ack Train Trip จากโหมด TR ใน Level 1 ([7])'
+          ],
+          supervision: [
+            'ปลดคำสั่ง Emergency Brake (บน QSY/Siemens ต้อง Reset มือห้ามล้อตามขั้นตอนร่วมด้วย) แต่ยังแสดงสาเหตุ Trip ค้างบน DMI',
+            'ห้ามเคลื่อนรถไปข้างหน้า (Reverse Movement Protection กลับทิศ — เดินหน้าสั่งเบรก)',
+            'อนุญาตให้ถอยหลังได้เฉพาะภายในระยะ D_NVPOTRP = 2 m (ค่า ST6) — ถอยเกิน 2 m ระบบสั่ง Service Brake (ID 307)'
+          ],
+          exit: [
+            'กด Mode → Start แล้วกด Ack เข้า SR ([8]) (ใน L1) เพื่อเดินรถต่อด้วยความรับผิดชอบ พขร.',
+            'เลือก Mode → Shunting ([5]) → เข้า SH',
+            'ปิดห้องขับ ([28]) → เข้า SB'
+          ],
+          refs: 'SUBSET-026-4 §4.4.14, §4.6.3 [5][7][8][28] • SRT ST6 §5.1.12, App.1 (D_NVPOTRP = 2 m) • PRO-9018 §9.5.3–9.5.5'
+        },
+        SL: {
+          code: 'SL',
+          title: 'Sleeping — รถจักรพ่วงที่ถูกควบคุมระยะไกล (MU)',
+          subtitle: 'Slave Engine ต่อสายควบคุม Multiple Unit กับหัวรถจักรนำ',
+          tone: 'neutral',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 0, Level 1 (All Levels)',
+          entry: [
+            'เข้าอัตโนมัติจาก SB เมื่อ: รถจอดสนิท + ปิดทุกห้องขับ + ได้รับสัญญาณ "Sleeping" จาก Train Interface ([14])'
+          ],
+          supervision: [
+            'หน้าจอ DMI ปิดสนิท ไม่แสดงข้อมูล (ไม่มี พขร. ประจำห้องขับ)',
+            'ไม่คุมการเดินรถ (หัวรถจักรนำเป็นผู้ควบคุม) แต่ยังอ่าน Balise เพื่ออัปเดตตำแหน่ง (Train Position)',
+            'ไม่สั่ง SB จาก Balise Group Consistency Error (§4.4.6.1.12) และจำ Safety Fault ไว้จัดการหลังออกจาก SL เพื่อไม่ให้หยุดขบวนกลางทาง'
+          ],
+          exit: [
+            'เปิดห้องขับใดห้องขับหนึ่ง ([2]) → กลับ SB',
+            'สัญญาณ Sleeping หายไปขณะรถจอดสนิท ([3]) → กลับ SB'
+          ],
+          refs: 'SUBSET-026-4 §4.4.6, §4.6.3 [2][3][14] • SRT ST6 §5.1.4 • PRO-9018 §8.2.5, §9.6.2, §9.6.4'
+        },
+        NL: {
+          code: 'NL',
+          title: 'Non Leading — รถจักรพ่วงแบบ Tandem (มี พขร. ประจำ)',
+          subtitle: 'Slave Engine ที่ไม่ได้ต่อสายควบคุมระยะไกลกับหัวรถจักรนำ',
+          tone: 'neutral',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 0, Level 1 (All Levels)',
+          entry: [
+            'รถจอดสนิท + มีสัญญาณ "Non-Leading Input" จาก Train Interface + พขร. เลือก Mode → Non Leading และกด Ack (ID 298) ([46]) จาก SB/SH/FS/OS/SR'
+          ],
+          supervision: [
+            'ETCS ไม่ทำหน้าที่คุ้มครองการเดินรถ (NO protection functions) — ST6 §5.1.13 ย้ำห้ามใช้โหมดนี้โดยมิชอบ และมีการบันทึกเข้า JRU',
+            'ไม่ตรวจ Linking Consistency และไม่สั่ง SB เมื่อ Balise ผิดพลาด (§4.4.15.1.9–.10)',
+            'แสดงความเร็วรถและ Track Conditions บน DMI ให้ พขร. ปฏิบัติตาม'
+          ],
+          exit: [
+            'จอดสนิทแล้วเลือก Mode → Stop Non Leading หรือสัญญาณ NL หาย ([47]) → กลับ SB',
+            'ปิดห้องขับ ([28]) → กลับ SB'
+          ],
+          refs: 'SUBSET-026-4 §4.4.15, §4.6.3 [28][46][47] • SRT ST6 §5.1.13 • PRO-9018 §8.3.9–8.3.10, §9.2.4, §9.6.3, §9.6.8'
+        },
+        SF: {
+          code: 'SF',
+          title: 'System Failure — ระบบขัดข้องที่กระทบความปลอดภัย',
+          subtitle: 'EVC ตรวจพบความผิดพลาดระดับ Safety-critical (เช่น ODO/BTM/EVC Fault)',
+          tone: 'error',
+          provenance: 'standard + ST6 spec + OEM manual',
+          levels: 'Level 0, Level 1 (All Levels)',
+          entry: [
+            'EVC ตรวจพบความผิดพลาดที่กระทบความปลอดภัย ([13], Priority -p3- เข้าได้จากทุกโหมดยกเว้น NP/IS)',
+            'หมายเหตุ: ใน SL/NL ระบบจะพยายามจำ fault ไว้ก่อนจนกว่าจะออกจากโหมด เพื่อไม่ให้ขบวนพ่วงหยุดกะทันหัน'
+          ],
+          supervision: [
+            'สั่ง Emergency Brake (EB) ถาวร และแสดงข้อผิดพลาดบน DMI (ID 309)',
+            'ไม่สามารถเปลี่ยนกลับไปโหมดเดินรถปกติได้โดยตรง'
+          ],
+          exit: [
+            'ตัดไฟเข้าระบบ ([29]) → NP (เพื่อ Off/On ATPB รีเซ็ตระบบใหม่)',
+            'เมื่อรถหยุดสนิท บิด Isolation Switch ([1]) → IS เพื่อปลด EB และเดินรถตามระเบียบเหตุขัดข้อง'
+          ],
+          refs: 'SUBSET-026-4 §4.4.5, §4.6.3 [1][13][29] • SRT ST6 §5.1.3 • PRO-9018 §11.1.1–11.1.2'
+        },
+        IS: {
+          code: 'IS',
+          title: 'Isolation — ตัดแยกระบบ ETCS ออกจากห้ามล้อ',
+          subtitle: 'พขร. บิดกุญแจ Isolation Switch เพื่อตัดการทำงาน ETCS',
+          tone: 'error',
+          provenance: 'standard + ST6 spec + QSY manual',
+          levels: 'Level 0, Level 1 (All Levels)',
+          entry: [
+            'พขร. บิดกุญแจ ETCS Isolation Switch ([1], Priority สูงสุด -p1- เข้าได้จากทุกโหมดรวมถึง NP/SF/TR)',
+            'ST6 §5.1.1 กำหนดให้สวิตช์ต้องมีซีลผนึก (Sealed) และบันทึกการใช้งานลง JRU'
+          ],
+          supervision: [
+            'ตัดอุปกรณ์ ETCS ออกจากวงจรเบรกทางกายภาพ — ระบบ ETCS ไม่คุ้มครองใดๆ ทั้งสิ้น พขร. รับผิดชอบ 100%',
+            'บน QSY: หลอด Isolation Lamp ติดสว่าง และหน้าจอ DMI แสดงเฉพาะความเร็วรถ ("Train isolated")'
+          ],
+          exit: [
+            'ไม่มี Transition ปกติออกจาก IS ใน SUBSET-026-4 (§4.4.3.1.3)',
+            'ต้องใช้ขั้นตอนปฏิบัติการเฉพาะ: บน QSY ให้ Off ATPB → บิดกุญแจ Isolation กลับท่าใช้งาน → On ATPB ใหม่ (บูตผ่าน NP → SB พร้อม EB ~80 s)'
+          ],
+          refs: 'SUBSET-026-4 §4.4.3, §4.6.3 [1] • SRT ST6 §5.1.1 • PRO-9018 §10.4 • การเตรียมความพร้อมฯ หน้า 14–15'
+        },
+        SOM_STEPS: {
+          code: 'SOM',
+          title: 'ขั้นตอน Start of Mission (ในโหมด SB)',
+          subtitle: 'การเตรียมข้อมูลและทดสอบห้ามล้อก่อนกด Start',
+          tone: 'neutral',
+          provenance: 'standard + QSY manual',
+          levels: 'Level 0 / Level 1',
+          entry: [
+            'รถอยู่ในโหมด SB และจอดสนิท (Standstill Supervision)',
+            'เปิดห้องขับ (Cab Activation — บน QSY ใช้คันกลับอาการ Reverser)'
+          ],
+          supervision: [
+            '1) กรอก Driver ID → เลือก ETCS Level (L1 ในเขต ST6 หรือ L0 นอกเขต)',
+            '2) Brake Test / Self-Test (QSY Part 2): มือห้ามล้อ RUN ลม BP ~5 bar → ระบบสั่ง EB อัตโนมัติ 2 ครั้ง ต้องรีบ Reset ใน 1 นาทีหลังแต่ละครั้ง แล้วรอ ~25 s จนขึ้น "ETCS Test Successful"',
+            '3) ป้อน Train Data (ชนิดรถ ความยาว ความเร็วสูงสุด น้ำหนักเพลา ฯลฯ) และ Train Running Number'
+          ],
+          exit: [
+            'Level 1: กดปุ่ม Start (QSY กดค้างสัญลักษณ์ SR 3 วินาที) → SR ([8])',
+            'Level 0: กดปุ่ม Start + Ack → UN ([60])'
+          ],
+          refs: 'SUBSET-026-5 §5.4 • ตารางสรุป QSY SOM Part 1–4 • PRO-9018 §8.1.1, §8.3'
+        },
+        L0_TO_L1: {
+          code: 'L0→L1',
+          title: 'การเปลี่ยนระดับอัตโนมัติ Level 0 → Level 1',
+          subtitle: 'จุด "Entry to ETCS" พร้อม Advanced Announcement',
+          tone: 'primary',
+          provenance: 'ST6 spec + OEM manual',
+          levels: 'Level 0 → Level 1',
+          entry: [
+            'รถวิ่งในโหมด UN (Level 0) ผ่าน Balise แจ้งล่วงหน้า (เช่น เสา Distant) และ Balise จุดเปลี่ยนระดับ ("Entry to ETCS")'
+          ],
+          supervision: [
+            'ST6 §4.3: ส่ง Level Transition Order ซ้ำใน Balise ล่วงหน้าเพื่อป้องกันการพลาดอ่าน พร้อมส่ง National Values ครบชุด',
+            'การเปลี่ยนระดับเกิดขึ้นอัตโนมัติเมื่อเสาอากาศผ่าน Balise สุดท้ายของกลุ่ม (ไม่ต้องกด Ack)'
+          ],
+          exit: [
+            'ได้รับ MA + SSP + Gradient ครบ ([25]) → เข้า FS อัตโนมัติ (อาจขึ้น ID 273 จนท้ายขบวนพ้นจุด)',
+            'รับ Mode Profile OS ([34]) → เข้า OS (ต้อง Ack ภายใน 5 s) | รับ Override ([44]) → SR'
+          ],
+          refs: 'SRT ST6 §4.3 (Figure 4-1) • SUBSET-026-4 §4.6.3 [25][34][44] • PRO-9018 §9.7'
+        },
+        L1_TO_L0: {
+          code: 'L1→L0',
+          title: 'การเปลี่ยนระดับ Level 1 → Level 0 (ต้อง Ack 5s)',
+          subtitle: 'จุด "Exit from ETCS" เนื่องจากระดับการคุ้มครองลดลง',
+          tone: 'warning',
+          provenance: 'ST6 spec + OEM manual',
+          levels: 'Level 1 → Level 0',
+          entry: [
+            'รถวิ่งใน FS / OS / SR ผ่าน Balise ที่แจ้ง Pre-announcement ออกเขต L1'
+          ],
+          supervision: [
+            'ST6 §4.4: แสดงข้อความแจ้งล่วงหน้าบน DMI ประมาณ 400 m ก่อนป้าย "Exit from ETCS" (ID 275 + ID 257)',
+            'พขร. ต้องกดปุ่ม Acknowledge ภายในช่วง 400 m ก่อนออก หรือไม่เกิน T_AMT = 5 s หลังผ่านจุดออก',
+            'หากไม่กด Ack ทันเวลา → EVC สั่ง Service Brake (SB)'
+          ],
+          exit: [
+            'เมื่อผ่านจุดเปลี่ยนระดับ ([21]) → ล้างข้อมูล MA/เส้นทาง และเข้าสู่โหมด UN (Level 0)'
+          ],
+          refs: 'SRT ST6 §4.4 (Figure 4-2), App.2 (T_AMT = 5 s) • SUBSET-026-4 §4.6.3 [21] • PRO-9018 §9.8'
+        },
+        OV_DECISION: {
+          code: 'CHECK',
+          title: 'จุดตัดสินใจ: จอดสนิทและกด Override EOA หรือไม่?',
+          subtitle: 'เงื่อนไขก่อนผ่านเสาแดง / จุดสิ้นสุดสิทธิ์ (EOA)',
+          tone: 'warning',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 1',
+          entry: [
+            'ขบวนรถมาถึงเสาสัญญาณท่าห้าม (เสาแดง) หรือ End of Authority (EOA) ในโหมด FS/OS (หรือ SR/PT/SB)'
+          ],
+          supervision: [
+            'ST6 Appendix 1: V_NVALLOWOVTRP = 0 km/h — รถต้องหยุดสนิท (0 km/h) เท่านั้นจึงจะกด Suppress → Override EOA ได้',
+            'ต้องได้รับคำสั่งอนุญาตผ่านเสาแดงตามระเบียบการเดินรถก่อนกด Override'
+          ],
+          exit: [
+            'กด Override EOA + Ack (ID 300) ([37]) → เข้า SR (Override Active) ผ่านเสาแดงได้',
+            'ไม่กด Override แล้วเคลื่อนรถเลย EOA/Balise ([12]/[18]) → เข้า TR (Trip + EB ค้าง)'
+          ],
+          refs: 'SUBSET-026-5 §5.8 • SRT ST6 §2.7, App.1 (V_NVALLOWOVTRP = 0) • PRO-9018 §8.4.3, §9.9.2'
+        },
+        SR_OV: {
+          code: 'SR+OV',
+          title: 'SR (Override Active) — ยับยั้ง Trip ชั่วคราว',
+          subtitle: 'อนุญาตให้เคลื่อนผ่านเสาแดง/EOA ภายใต้ระยะทางและเวลาจำกัด',
+          tone: 'warning',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 1',
+          entry: [
+            'พขร. เลือก Suppress → Override EOA และกดปุ่ม Ack (ID 300) ขณะความเร็ว ≤ V_NVALLOWOVTRP (0 km/h) ([37])'
+          ],
+          supervision: [
+            'แสดงไอคอน Override (EOA Passed) บน DMI คู่กับโหมด SR',
+            'ความเร็วควบคุม ST6: V_NVSUPOVTRP = 25 km/h',
+            'ยับยั้งคำสั่ง Trip จาก Balise ได้ภายในระยะ D_NVOVTRP = 50 m และเวลา T_NVOVTRP = 180 s (ค่า ST6)',
+            'หากเกิน 50 m หรือ 180 s แล้วยังไม่พ้น EOA เดิม ([43]) หรือถูก Balise ต้นถัดไปสั่งหยุด → Trip ทันที'
+          ],
+          exit: [
+            'ผ่านพ้นเสาแดงและได้รับ MA ใหม่จาก Balise ถัดไป ([32]) → กลับเข้า FS อัตโนมัติ',
+            'สิ้นสุดหน้าต่าง Override แล้วฝ่า EOA/คำสั่งหยุด ([43]/[54]) → TR'
+          ],
+          refs: 'SUBSET-026-4 §4.6.3 [37][43] • SUBSET-026-5 §5.8 • SRT ST6 App.1 (D_NVOVTRP=50m, T_NVOVTRP=180s, V_NVSUPOVTRP=25km/h)'
+        },
+        TRIP_CAUSE: {
+          code: 'TRIGGER',
+          title: 'สาเหตุที่กระตุ้นให้เกิด Train Trip',
+          subtitle: 'เหตุการณ์ด้านความปลอดภัยที่ทำให้ EVC ตัดเข้าโหมด TR ทันที',
+          tone: 'error',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 0, Level 1',
+          entry: [
+            'เสาอากาศผ่านเลย EOA/LOA ใน L1 ([12])',
+            'รับ Trip Order จาก Balise ขณะไม่ได้ Override ([18])',
+            'ผ่าน Balise ที่มีคำสั่ง "Stop if in SR" ([54]) หรือ "Stop if in Shunting" ([49])',
+            'เลยระยะ SR ([42]), Linking reaction เป็น Trip ([17]), หรือผ่าน Balise ผิดทิศ ([66])'
+          ],
+          supervision: [
+            'ข้อสังเกต: การขับเร็วเกินพิกัดแล้วโดน EB โดยไม่ได้เลย EOA ไม่ใช่ Train Trip (§4.4.13.1.1.1)',
+            'เมื่อเงื่อนไข Trip เกิดขึ้น Priority -p4- จะทำงานเหนือโหมดเดินรถปกติทันที'
+          ],
+          exit: [
+            'บังคับเข้าสู่โหมด TR ทันที พร้อมสั่ง EB ค้าง'
+          ],
+          refs: 'SUBSET-026-4 §4.4.13.1.1.1, §4.6.3 [12][17][18][20][42][49][54][66]'
+        },
+        TR_ACK: {
+          code: 'ACK',
+          title: 'จอดสนิท (v = 0) + กด Ack Train Trip',
+          subtitle: 'เงื่อนไขบังคับเพื่อปลด Emergency Brake จากโหมด TR',
+          tone: 'warning',
+          provenance: 'standard + OEM manual',
+          levels: 'Level 0 / Level 1',
+          entry: [
+            'รถอยู่ในโหมด TR และหยุดสนิท (v = 0 km/h) แล้ว'
+          ],
+          supervision: [
+            'DMI แสดงข้อความ BRAKES APPLIED DUE TO TRAIN TRIP ACK TRAIN TRIP (ID 265)',
+            'พขร. ต้องตรวจสอบสภาพทางให้ปลอดภัยตามระเบียบก่อนกดปุ่ม Acknowledge ภายนอก'
+          ],
+          exit: [
+            'ถ้าอยู่ Level 1 ([7]) → เข้า PT (Post Trip)',
+            'ถ้าอยู่ Level 0 และมี Train Data ([62]) → กลับ UN | ไม่มี Train Data ([68]) → SH'
+          ],
+          refs: 'SUBSET-026-4 §4.4.13.1.4, §4.6.3 [7][62][68] • PRO-9018 §9.5.1–9.5.3, §10.6'
+        },
+        RV_AREA: {
+          code: 'AREA',
+          title: 'พื้นที่อนุญาต Reversing จาก Trackside',
+          subtitle: 'เงื่อนไขเบื้องต้นก่อนเข้าโหมด RV (เช่น อุโมงค์/สะพานยาว)',
+          tone: 'primary',
+          provenance: 'standard + ST6 spec',
+          levels: 'Level 1',
+          entry: [
+            'ขบวนรถวิ่งในโหมด FS หรือ OS ผ่าน Balise ที่ประกาศเขต Reversing Possible'
+          ],
+          supervision: [
+            'DMI แสดง REVERSING IS POSSIBLE (ID 285)',
+            'รถต้องจอดสนิท (v = 0) ก่อนจึงจะสลับคันกลับอาการไปท่าถอยและกด Ack ได้'
+          ],
+          exit: [
+            'ตั้งคันกลับอาการท่าถอย + กด Ack (ID 261) ([59]) → เข้าโหมด RV'
+          ],
+          refs: 'SUBSET-026-4 §4.4.18, §4.6.3 [59] • SRT ST6 §5.1.15 • PRO-9018 §9.4.5'
+        }
+      };
+
+      function markerDefs() {
+        return `
+          <defs>
+            <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="var(--muted-foreground)" />
+            </marker>
+            <marker id="arr-primary" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="var(--primary)" />
+            </marker>
+            <marker id="arr-success" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="var(--success)" />
+            </marker>
+            <marker id="arr-warning" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="var(--warning)" />
+            </marker>
+            <marker id="arr-error" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="var(--error)" />
+            </marker>
+          </defs>
+        `;
+      }
+
+      function zoneBox(x, y, w, h, title, tone) {
+        const stroke = tone === 'error' ? 'var(--error)' : tone === 'success' ? 'var(--success)' : tone === 'warning' ? 'var(--warning)' : 'var(--border)';
+        return `
+          <g>
+            <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="var(--content)" stroke="${stroke}" stroke-width="1" stroke-dasharray="4 4" opacity="0.9" />
+            <text x="${x + 12}" y="${y + 20}" fill="var(--muted-foreground)" font-size="12" font-weight="600">${title}</text>
+          </g>
+        `;
+      }
+
+      function nodeBox({ id, x, y, w, h, code, title, sub, tone = 'primary', dashed = false }) {
+        const colorVar =
+          tone === 'success' ? 'var(--success)' :
+          tone === 'warning' ? 'var(--warning)' :
+          tone === 'error' ? 'var(--error)' :
+          tone === 'neutral' ? 'var(--muted-foreground)' : 'var(--primary)';
+
+        const bgFill = tone === 'neutral'
+          ? 'var(--content)'
+          : `color-mix(in srgb, ${colorVar} 10%, var(--card))`;
+
+        const tagBg = `color-mix(in srgb, ${colorVar} 18%, var(--card))`;
+        const cx = x + w / 2;
+        const dashAttr = dashed ? 'stroke-dasharray="5 3"' : '';
+        const hasSub = Boolean(sub);
+
+        return `
+          <g class="svg-node" data-node-id="${id}" tabindex="0" role="button" aria-label="${code}: ${title}">
+            <rect class="node-ring" x="${x - 4}" y="${y - 4}" width="${w + 8}" height="${h + 8}" rx="9" fill="none" stroke="${colorVar}" stroke-width="2.5" />
+            <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="var(--card)" />
+            <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${bgFill}" stroke="${colorVar}" stroke-width="1.75" ${dashAttr} />
+            <rect x="${x + 10}" y="${y + 8}" width="${Math.max(36, code.length * 9 + 14)}" height="18" rx="3" fill="${tagBg}" stroke="${colorVar}" stroke-width="1" />
+            <text x="${x + 10 + Math.max(36, code.length * 9 + 14) / 2}" y="${y + 21}" text-anchor="middle" fill="${colorVar}" font-size="12" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">${code}</text>
+            <text x="${cx}" y="${y + (hasSub ? 44 : 49)}" text-anchor="middle" fill="var(--foreground)" font-size="13" font-weight="600">${title}</text>
+            ${hasSub ? `<text x="${cx}" y="${y + 62}" text-anchor="middle" fill="var(--muted-foreground)" font-size="12">${sub}</text>` : ''}
+          </g>
+        `;
+      }
+
+      function edgePath({ d, label, lx, ly, lw, tone = 'muted', dashed = false, bidir = false }) {
+        const stroke =
+          tone === 'primary' ? 'var(--primary)' :
+          tone === 'success' ? 'var(--success)' :
+          tone === 'warning' ? 'var(--warning)' :
+          tone === 'error' ? 'var(--error)' : 'var(--muted-foreground)';
+        const markerEnd = `url(#arr-${tone})`;
+        const markerStart = bidir ? `marker-start="url(#arr-${tone})"` : '';
+        const dashAttr = dashed ? 'stroke-dasharray="6 4"' : '';
+
+        let labelSvg = '';
+        if (label) {
+          const boxW = lw || Math.max(72, label.length * 7.2 + 16);
+          const boxH = 22;
+          labelSvg = `
+            <rect x="${lx - boxW / 2}" y="${ly - boxH / 2}" width="${boxW}" height="${boxH}" rx="4" fill="var(--card)" stroke="var(--border)" stroke-width="1" />
+            <text x="${lx}" y="${ly + 4}" text-anchor="middle" fill="var(--foreground)" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">${label}</text>
+          `;
+        }
+
+        return `
+          <g>
+            <path d="${d}" fill="none" stroke="${stroke}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="${markerEnd}" ${markerStart} ${dashAttr} />
+            ${labelSvg}
+          </g>
+        `;
+      }
+
+      const CASES = [
+        {
+          id: 'overview',
+          tabLabel: '0. ภาพรวมทุกโหมด',
+          title: 'ภาพรวมเวิร์กโฟลว์การเปลี่ยนโหมด ETCS (Overview State Map)',
+          levels: 'Level 0 • Level 1',
+          objective: 'แสดงความสัมพันธ์หลักของโหมดทั้ง 14 โหมดที่ใช้งานบนเส้นทาง รฟท. ST6 พร้อมกลุ่มเตรียมการ เดินรถ ช่วยเหลือ และฉุกเฉิน/ขัดข้อง',
+          params: ['Baseline: SRS 2.3.0d / 3.6.0', 'NID_C = 832', 'V_NVSTFF/SH/OS = 25 km/h', 'V_NVUNFIT = 120 km/h'],
+          defaultNode: 'FS',
+          footNote: 'หมายเหตุมาตรฐานเพิ่มเติม (ไม่ได้ใช้บน ST6): SN (National System / STM — ST6 §5.1.14 ไม่ใช้งาน), LS (Limited Supervision — เพิ่มใน SRS v3.6.0 §4.4.19), PS (Passive Shunting — เพิ่มใน SRS v3.6.0 §4.4.20)',
+          renderSvg: () => {
+            const vb = '0 0 960 480';
+            const zones = [
+              zoneBox(20, 16, 252, 154, '1. เปิดระบบ & เตรียมพร้อม', 'neutral'),
+              zoneBox(290, 16, 404, 256, '2. โหมดเดินรถหลัก (L1 / L0)', 'success'),
+              zoneBox(712, 16, 228, 256, '3. สับเปลี่ยน ถอยหลัง & พ่วง', 'neutral'),
+              zoneBox(20, 294, 920, 168, '4. โหมดฉุกเฉิน / ฝ่าสัญญาณ / ขัดข้อง / ตัดระบบ', 'error')
+            ].join('');
+
+            const edges = [
+              edgePath({ d: 'M 102 90 L 132 90', label: '[4] จ่ายไฟ', lx: 117, ly: 68, lw: 68, tone: 'primary' }),
+              edgePath({ d: 'M 256 82 L 310 82', label: '[8] Start L1', lx: 283, ly: 60, lw: 72, tone: 'primary' }),
+              edgePath({ d: 'M 194 126 L 194 210 Q 194 218 202 218 L 310 218', label: '[60] Start L0', lx: 248, ly: 218, lw: 78, tone: 'primary' }),
+              edgePath({ d: 'M 454 82 L 530 82', label: '[32] MA+SSP', lx: 492, ly: 60, lw: 80, tone: 'success' }),
+              edgePath({ d: 'M 604 120 L 604 182', label: 'OS [15] / FS [32]', lx: 604, ly: 151, lw: 110, tone: 'warning', bidir: true }),
+              edgePath({ d: 'M 454 210 L 492 210 Q 500 210 500 202 L 500 112 Q 500 104 508 104 L 530 104', label: 'L0↔L1 [25/21]', lx: 492, ly: 154, lw: 96, tone: 'primary', bidir: true }),
+              edgePath({ d: 'M 156 126 L 156 270 Q 156 278 164 278 L 774 278 Q 782 278 782 270 L 782 120', label: '[5] Shunting', lx: 472, ly: 278, lw: 84, tone: 'warning', dashed: true }),
+              edgePath({ d: 'M 194 54 L 194 24 Q 194 16 202 16 L 916 16 Q 924 16 924 24 L 924 176', label: '[14/46] MU / Tandem', lx: 560, ly: 16, lw: 128, tone: 'muted', dashed: true }),
+              edgePath({ d: 'M 678 82 L 826 82', label: '[59] RV', lx: 716, ly: 60, lw: 62, tone: 'warning', dashed: true }),
+              edgePath({ d: 'M 352 252 L 352 332 Q 352 340 344 340 L 310 340', label: 'ฝ่า EOA/Trip', lx: 332, ly: 298, lw: 84, tone: 'error' }),
+              edgePath({ d: 'M 310 378 L 368 378', label: '[7] Ack (L1)', lx: 339, ly: 422, lw: 82, tone: 'warning' }),
+              edgePath({ d: 'M 440 340 L 440 318 Q 440 310 432 310 L 292 310 Q 284 310 284 302 L 284 114 Q 284 106 292 106 L 310 106', label: '[8] Start → SR', lx: 284, ly: 244, lw: 92, tone: 'primary', dashed: true }),
+              edgePath({ d: 'M 618 252 L 618 340', label: '[13] Safety Fault', lx: 618, ly: 304, lw: 112, tone: 'error', dashed: true }),
+              edgePath({ d: 'M 692 378 L 764 378', label: '[1] Isolation', lx: 728, ly: 350, lw: 84, tone: 'error', dashed: true })
+            ].join('');
+
+            const nodes = [
+              nodeBox({ id: 'NP', x: 30, y: 54, w: 72, h: 72, code: 'NP', title: 'No Power', sub: 'EB ค้าง', tone: 'error' }),
+              nodeBox({ id: 'SB', x: 132, y: 54, w: 124, h: 72, code: 'SB', title: 'Stand By', sub: 'ทำ SOM • ≤2m', tone: 'neutral' }),
+              nodeBox({ id: 'SR', x: 310, y: 46, w: 144, h: 74, code: 'SR', title: 'Staff Resp.', sub: '≤ 25 km/h', tone: 'primary' }),
+              nodeBox({ id: 'FS', x: 530, y: 46, w: 148, h: 74, code: 'FS', title: 'Full Superv.', sub: 'CSM/TSM/RSM', tone: 'success' }),
+              nodeBox({ id: 'OS', x: 530, y: 184, w: 148, h: 68, code: 'OS', title: 'On Sight', sub: 'Call-On ≤ 25', tone: 'warning' }),
+              nodeBox({ id: 'UN', x: 310, y: 184, w: 144, h: 68, code: 'UN', title: 'Unfitted (L0)', sub: '≤ 120 km/h', tone: 'primary' }),
+              nodeBox({ id: 'SH', x: 726, y: 46, w: 94, h: 74, code: 'SH', title: 'Shunting', sub: '≤ 25', tone: 'warning' }),
+              nodeBox({ id: 'RV', x: 828, y: 46, w: 98, h: 74, code: 'RV', title: 'Reversing', sub: 'ถอยฉุกเฉิน', tone: 'warning', dashed: true }),
+              nodeBox({ id: 'SL', x: 726, y: 180, w: 94, h: 72, code: 'SL', title: 'Sleeping', sub: 'MU พ่วง', tone: 'neutral' }),
+              nodeBox({ id: 'NL', x: 828, y: 180, w: 98, h: 72, code: 'NL', title: 'Non Lead', sub: 'Tandem', tone: 'neutral' }),
+              nodeBox({ id: 'TR', x: 162, y: 340, w: 148, h: 74, code: 'TR', title: 'Trip Mode', sub: 'EB ค้าง (จอด+Ack)', tone: 'error' }),
+              nodeBox({ id: 'PT', x: 368, y: 340, w: 144, h: 74, code: 'PT', title: 'Post Trip', sub: 'ถอย ≤ 2 m (L1)', tone: 'error' }),
+              nodeBox({ id: 'SF', x: 544, y: 340, w: 148, h: 74, code: 'SF', title: 'System Fail', sub: 'EB ถาวร', tone: 'error' }),
+              nodeBox({ id: 'IS', x: 764, y: 340, w: 156, h: 74, code: 'IS', title: 'Isolation', sub: 'ตัดระบบ พขร.100%', tone: 'error', dashed: true })
+            ].join('');
+
+            return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-0"><title id="svg-title-0">ภาพรวมเวิร์กโฟลว์โหมดการทำงาน ETCS</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
+          }
+        },
+        {
+          id: 'som',
+          tabLabel: '1. Start of Mission',
+          title: 'เคส 1: Start of Mission (SOM) — เปิดระบบจนเริ่มเดินรถ',
+          levels: 'Level 0 • Level 1',
+          objective: 'ลำดับตั้งแต่ On เบรกเกอร์ ATPB → ปลด EB (~80s บน QSY) → กรอกข้อมูล/Brake Test ใน SB → แยกเข้า Level 1 (SR→FS) หรือ Level 0 (UN)',
+          params: ['QSY EB Reset: ~80 s', 'Brake Test: EB x2 (Reset < 1 min)', 'D_NVROLL = 2 m', 'V_NVSTFF = 25 km/h'],
+          defaultNode: 'SOM_STEPS',
+          renderSvg: () => {
+            const vb = '0 0 960 410';
+            const zones = [
+              zoneBox(24, 24, 520, 174, 'ขั้นตอนเตรียมระบบบนรถจักร (Standstill v = 0)', 'neutral'),
+              zoneBox(568, 24, 368, 174, 'เส้นทาง ETCS Level 1 (ST6)', 'success'),
+              zoneBox(568, 224, 368, 152, 'เส้นทาง ETCS Level 0 (นอกเขต ETCS)', 'primary')
+            ].join('');
+
+            const edges = [
+              edgePath({ d: 'M 152 106 L 204 106', label: '[4] จ่ายไฟ', lx: 178, ly: 82, lw: 72, tone: 'primary' }),
+              edgePath({ d: 'M 332 106 L 380 106', label: 'Cab Active', lx: 356, ly: 82, lw: 76, tone: 'primary' }),
+              edgePath({ d: 'M 528 106 L 590 106', label: '[8] Start + Ack', lx: 559, ly: 82, lw: 96, tone: 'primary' }),
+              edgePath({ d: 'M 730 106 L 784 106', label: '[32] MA+SSP', lx: 757, ly: 82, lw: 84, tone: 'success' }),
+              edgePath({ d: 'M 454 148 L 454 296 Q 454 304 462 304 L 590 304', label: '[60] เลือก L0 + Start + Ack', lx: 518, ly: 266, lw: 148, tone: 'primary' }),
+              edgePath({ d: 'M 268 148 L 268 296 Q 268 304 260 304 L 194 304', label: '[5] เลือกสับเปลี่ยน', lx: 230, ly: 236, lw: 108, tone: 'warning', dashed: true })
+            ].join('');
+
+            const nodes = [
+              nodeBox({ id: 'NP', x: 36, y: 66, w: 116, h: 80, code: 'NP', title: 'No Power', sub: 'On ATPB → EB 80s', tone: 'error' }),
+              nodeBox({ id: 'SB', x: 204, y: 66, w: 128, h: 80, code: 'SB', title: 'Stand By', sub: 'ห้ามไหล ≤ 2 m', tone: 'neutral' }),
+              nodeBox({ id: 'SOM_STEPS', x: 380, y: 62, w: 148, h: 86, code: 'SOM', title: 'ป้อนข้อมูล & Test', sub: 'ID / Test x2 / Data', tone: 'neutral' }),
+              nodeBox({ id: 'SR', x: 590, y: 66, w: 140, h: 80, code: 'SR', title: 'Staff Resp.', sub: 'กดค้าง 3s • ≤25', tone: 'primary' }),
+              nodeBox({ id: 'FS', x: 784, y: 66, w: 136, h: 80, code: 'FS', title: 'Full Superv.', sub: 'ได้ MA+SSP+Grad', tone: 'success' }),
+              nodeBox({ id: 'UN', x: 590, y: 264, w: 196, h: 80, code: 'UN', title: 'Unfitted (Level 0)', sub: 'คุม ≤ 120 km/h • ดูเสาเอง', tone: 'primary' }),
+              nodeBox({ id: 'SH', x: 48, y: 264, w: 146, h: 80, code: 'SH', title: 'Shunting', sub: 'ไม่ต้องป้อน Train Data', tone: 'warning', dashed: true })
+            ].join('');
+
+            return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-1"><title id="svg-title-1">เวิร์กโฟลว์ Start of Mission</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
+          }
+        },
+        {
+          id: 'normal',
+          tabLabel: '2. เดินรถปกติ & เปลี่ยน Level',
+          title: 'เคส 2: เดินรถปกติและเปลี่ยนระดับ (FS ↔ OS, L0 ↔ L1)',
+          levels: 'Level 0 ↔ Level 1',
+          objective: 'การทำงานของโหมด FS การเข้า-ออก Emergency Call-On (OS) และการข้ามเขตรอยต่อ Level 0 ↔ Level 1',
+          params: ['T_AMT = 5 s (Ack)', 'OS Limit = 25 km/h', 'Exit L1 Alert ~400 m', 'RS = 25 km/h'],
+          defaultNode: 'FS',
+          renderSvg: () => {
+            const vb = '0 0 960 420';
+            const zones = [
+              zoneBox(24, 24, 244, 368, 'เขต Level 0 (นอก ETCS)', 'primary'),
+              zoneBox(292, 24, 644, 368, 'เขต ETCS Level 1 (ST6)', 'success')
+            ].join('');
+
+            const edges = [
+              edgePath({ d: 'M 232 106 L 316 106', label: 'เข้าป้าย Entry', lx: 274, ly: 82, lw: 92, tone: 'primary' }),
+              edgePath({ d: 'M 468 106 L 548 106', label: '[25] อัตโนมัติ', lx: 508, ly: 82, lw: 86, tone: 'success' }),
+              edgePath({ d: 'M 604 148 L 604 252', label: '[15/40] Call-On + Ack 5s', lx: 540, ly: 202, lw: 148, tone: 'warning' }),
+              edgePath({ d: 'M 676 252 L 676 148', label: '[32] พ้น OS + ได้ MA', lx: 748, ly: 202, lw: 128, tone: 'success' }),
+              edgePath({ d: 'M 642 148 L 642 184 Q 642 192 650 192 L 828 192 Q 836 192 836 200 L 836 252', label: 'แจ้งล่วงหน้า ~400m', lx: 768, ly: 170, lw: 124, tone: 'warning' }),
+              edgePath({ d: 'M 836 334 L 836 356 Q 836 364 828 364 L 148 364 Q 140 364 140 356 L 140 150', label: '[21] Ack ≤ 5s (ไม่กด→SB) → ล้าง MA เข้า L0', lx: 486, ly: 364, lw: 244, tone: 'warning', dashed: true })
+            ].join('');
+
+            const nodes = [
+              nodeBox({ id: 'UN', x: 52, y: 66, w: 180, h: 80, code: 'UN', title: 'Unfitted (L0)', sub: '≤ 120 km/h • ดูเสาเอง', tone: 'primary' }),
+              nodeBox({ id: 'L0_TO_L1', x: 316, y: 66, w: 152, h: 80, code: 'L0→L1', title: 'Entry to ETCS', sub: 'Balise แจ้งล่วงหน้า+NV', tone: 'primary' }),
+              nodeBox({ id: 'FS', x: 548, y: 64, w: 188, h: 84, code: 'FS', title: 'Full Supervision', sub: 'CSM/TSM/RSM • ID 273', tone: 'success' }),
+              nodeBox({ id: 'OS', x: 548, y: 254, w: 188, h: 80, code: 'OS', title: 'On Sight (Call-On)', sub: '≤ 25 km/h • พขร.มองทาง', tone: 'warning' }),
+              nodeBox({ id: 'L1_TO_L0', x: 756, y: 254, w: 160, h: 80, code: 'L1→L0', title: 'Exit from ETCS', sub: 'ต้องกด Ack ≤ 5 วินาที', tone: 'warning' })
+            ].join('');
+
+            return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-2"><title id="svg-title-2">เวิร์กโฟลว์เดินรถปกติและเปลี่ยนระดับ</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
+          }
+        },
+        {
+          id: 'override',
+          tabLabel: '3. ผ่านเสาแดง / Override',
+          title: 'เคส 3: การผ่านเสาแดงด้วย Override EOA',
+          levels: 'Level 1',
+          objective: 'ขั้นตอนขอผ่านเสาสัญญาณท่าห้าม (EOA) อย่างถูกต้อง เทียบกับผลลัพธ์หากไม่จอดสนิทหรือเลยหน้าต่าง Override',
+          params: ['V_NVALLOWOVTRP = 0 km/h', 'D_NVOVTRP = 50 m', 'T_NVOVTRP = 180 s', 'V_NVSUPOVTRP = 25 km/h'],
+          defaultNode: 'SR_OV',
+          renderSvg: () => {
+            const vb = '0 0 960 400';
+            const zones = [
+              zoneBox(24, 24, 912, 188, 'เส้นทางปฏิบัติการถูกต้อง (Correct Override Path)', 'warning'),
+              zoneBox(24, 232, 912, 144, 'เส้นทางเกิดความผิดพลาด / เลยขีดจำกัด (Trip Path)', 'error')
+            ].join('');
+
+            const edges = [
+              edgePath({ d: 'M 196 110 L 252 110', label: 'ถึงเสาแดง', lx: 224, ly: 84, lw: 72, tone: 'primary' }),
+              edgePath({ d: 'M 424 110 L 496 110', label: '[37] ใช่ + Ack 300', lx: 460, ly: 84, lw: 112, tone: 'warning' }),
+              edgePath({ d: 'M 684 110 L 752 110', label: '[32] รับ MA ถัดไป', lx: 718, ly: 84, lw: 108, tone: 'success' }),
+              edgePath({ d: 'M 338 152 L 338 264', label: '[12/18] ไม่กด/ไม่จอด→ฝ่า', lx: 256, ly: 214, lw: 138, tone: 'error' }),
+              edgePath({ d: 'M 590 152 L 590 280 Q 590 288 582 288 L 446 288', label: '[43] เกิน 50 m / 180 s', lx: 530, ly: 256, lw: 132, tone: 'error', dashed: true }),
+              edgePath({ d: 'M 444 324 L 750 324', label: '[7] จอดสนิท + Ack 265', lx: 600, ly: 348, lw: 138, tone: 'warning', dashed: true })
+            ].join('');
+
+            const nodes = [
+              nodeBox({ id: 'FS', x: 40, y: 70, w: 156, h: 80, code: 'FS / OS', title: 'ถึงหน้าเสาแดง', sub: 'EOA = 0 m', tone: 'primary' }),
+              nodeBox({ id: 'OV_DECISION', x: 252, y: 68, w: 172, h: 84, code: 'CHECK', title: 'จอด 0 กม./ชม.?', sub: 'กด Override EOA', tone: 'warning' }),
+              nodeBox({ id: 'SR_OV', x: 496, y: 66, w: 188, h: 86, code: 'SR+OV', title: 'Override Active', sub: '≤25 • ยับยั้ง 50m/180s', tone: 'warning' }),
+              nodeBox({ id: 'FS', x: 752, y: 70, w: 164, h: 80, code: 'FS', title: 'Full Supervision', sub: 'พ้นเสาแดงรับ MA ใหม่', tone: 'success' }),
+              nodeBox({ id: 'TR', x: 252, y: 266, w: 192, h: 80, code: 'TR', title: 'Trip Mode', sub: 'EB ค้างทันที', tone: 'error' }),
+              nodeBox({ id: 'PT', x: 752, y: 266, w: 164, h: 80, code: 'PT', title: 'Post Trip (L1)', sub: 'ถอย ≤ 2 m • Start→SR', tone: 'error', dashed: true })
+            ].join('');
+
+            return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-3"><title id="svg-title-3">เวิร์กโฟลว์ Override EOA</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
+          }
+        },
+        {
+          id: 'trip',
+          tabLabel: '4. เหตุ Trip & กู้คืน',
+          title: 'เคส 4: เหตุฝ่าสัญญาณ / Trip และการกู้คืน (TR → PT)',
+          levels: 'Level 0 • Level 1',
+          objective: 'ลำดับเหตุการณ์เมื่อระบบสั่ง Trip การบังคับหยุดนิ่ง กดรับทราบ (Ack) และทางแยกกู้คืนใน Level 1 (Post Trip) กับ Level 0',
+          params: ['TR: EB ค้างปลดไม่ได้', 'PT ถอยได้ ≤ D_NVPOTRP = 2 m', 'PT เดินหน้า = EB', 'Ack ID 265'],
+          defaultNode: 'PT',
+          renderSvg: () => {
+            const vb = '0 0 960 430';
+            const zones = [
+              zoneBox(24, 24, 520, 178, 'ระยะเกิดเหตุและบังคับหยุด (All Levels)', 'error'),
+              zoneBox(568, 24, 368, 224, 'การกู้คืนใน Level 1 (ผ่าน Post Trip)', 'warning'),
+              zoneBox(568, 266, 368, 134, 'การกู้คืนใน Level 0 (ไม่ออก PT)', 'primary')
+            ].join('');
+
+            const edges = [
+              edgePath({ d: 'M 184 106 L 228 106', label: 'สั่ง Trip', lx: 206, ly: 82, lw: 62, tone: 'error' }),
+              edgePath({ d: 'M 372 106 L 414 106', label: 'v = 0', lx: 393, ly: 82, lw: 48, tone: 'warning' }),
+              edgePath({ d: 'M 542 106 L 592 106', label: '[7] L1', lx: 567, ly: 82, lw: 48, tone: 'error' }),
+              edgePath({ d: 'M 738 86 L 792 86', label: '[8] Start', lx: 765, ly: 62, lw: 64, tone: 'primary' }),
+              edgePath({ d: 'M 738 134 L 764 134 Q 772 134 772 142 L 772 184 Q 772 192 780 192 L 792 192', label: '[5] SH', lx: 765, ly: 164, lw: 52, tone: 'warning', dashed: true }),
+              edgePath({ d: 'M 665 152 L 665 218 L 480 218 L 480 280', label: '[28] ปิดห้องขับ', lx: 572, ly: 218, lw: 92, tone: 'muted', dashed: true }),
+              edgePath({ d: 'M 478 148 L 478 196 Q 478 204 486 204 L 548 204 Q 556 204 556 212 L 556 314 Q 556 322 564 322 L 592 322', label: '[62] L0 มี Data', lx: 530, ly: 248, lw: 102, tone: 'primary' }),
+              edgePath({ d: 'M 556 322 L 556 362 Q 556 370 564 370 L 792 370', label: '[68] ไม่มี Data', lx: 672, ly: 370, lw: 92, tone: 'warning', dashed: true })
+            ].join('');
+
+            const nodes = [
+              nodeBox({ id: 'TRIP_CAUSE', x: 36, y: 66, w: 148, h: 80, code: 'TRIGGER', title: 'สาเหตุ Trip', sub: 'EOA / Balise / Stop', tone: 'error' }),
+              nodeBox({ id: 'TR', x: 228, y: 66, w: 144, h: 80, code: 'TR', title: 'Trip Mode', sub: 'EB ค้าง ปลดไม่ได้', tone: 'error' }),
+              nodeBox({ id: 'TR_ACK', x: 414, y: 66, w: 128, h: 80, code: 'ACK', title: 'จอด + กด Ack', sub: 'ID 265', tone: 'warning' }),
+              nodeBox({ id: 'PT', x: 592, y: 66, w: 146, h: 86, code: 'PT', title: 'Post Trip', sub: 'ถอย ≤2m • ห้ามหน้า', tone: 'error' }),
+              nodeBox({ id: 'SR', x: 792, y: 50, w: 128, h: 72, code: 'SR', title: 'Staff Resp.', sub: '≤ 25 km/h', tone: 'primary' }),
+              nodeBox({ id: 'SH', x: 792, y: 156, w: 128, h: 72, code: 'SH', title: 'Shunting', sub: '≤ 25 km/h', tone: 'warning' }),
+              nodeBox({ id: 'SB', x: 398, y: 282, w: 132, h: 74, code: 'SB', title: 'Stand By', sub: 'ปิดห้องขับ [28]', tone: 'neutral', dashed: true }),
+              nodeBox({ id: 'UN', x: 592, y: 286, w: 150, h: 68, code: 'UN', title: 'Unfitted (L0)', sub: 'มี Train Data', tone: 'primary' }),
+              nodeBox({ id: 'SH', x: 792, y: 316, w: 128, h: 68, code: 'SH', title: 'Shunting (L0)', sub: 'ไม่มี Train Data', tone: 'warning', dashed: true })
+            ].join('');
+
+            return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-4"><title id="svg-title-4">เวิร์กโฟลว์ Trip และการกู้คืน</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
+          }
+        },
+        {
+          id: 'sh_rv',
+          tabLabel: '5. สับเปลี่ยน & ถอยหลัง (SH / RV)',
+          title: 'เคส 5: สับเปลี่ยน (SH) และถอยหลังฉุกเฉิน (RV)',
+          levels: 'SH: L0, L1 • RV: L1',
+          objective: 'การเข้าและออกจากโหมดสับเปลี่ยนตามกฎ ST6 (เข้า SR ก่อนออกย่าน) รวมถึงการใช้ Reversing ในพื้นที่อนุญาต',
+          params: ['V_NVSHUNT = 25 km/h', 'ST6: ทางไม่สั่ง SH อัตโนมัติ', 'RV: เกินระยะ/SBI → EB', 'Ack RV ID 261'],
+          defaultNode: 'SH',
+          renderSvg: () => {
+            const vb = '0 0 960 420';
+            const zones = [
+              zoneBox(24, 24, 912, 184, 'A. โหมดสับเปลี่ยน — Shunting (SH) ในย่าน / สถานี', 'warning'),
+              zoneBox(24, 224, 912, 172, 'B. โหมดถอยหลังฉุกเฉิน — Reversing (RV) จากห้องขับเดิม (อุโมงค์ / สะพานยาว)', 'primary')
+            ].join('');
+
+            const edges = [
+              edgePath({ d: 'M 204 114 L 284 114', label: '[5] จอด + เลือก SH', lx: 244, ly: 88, lw: 112, tone: 'warning' }),
+              edgePath({ d: 'M 476 92 L 560 92', label: '[19] จอด + Exit SH', lx: 518, ly: 66, lw: 112, tone: 'primary' }),
+              edgePath({ d: 'M 716 92 L 774 92', label: '[8] SOM→SR', lx: 745, ly: 66, lw: 82, tone: 'primary' }),
+              edgePath({ d: 'M 380 156 L 380 184 L 560 184', label: '[49] ฝ่า Stop if in SH', lx: 472, ly: 184, lw: 132, tone: 'error', dashed: true }),
+              edgePath({ d: 'M 204 310 L 284 310', label: 'พบรหัสอนุญาต RV', lx: 244, ly: 284, lw: 116, tone: 'primary' }),
+              edgePath({ d: 'M 476 310 L 560 310', label: '[59] จอด+คันถอย+Ack', lx: 518, ly: 284, lw: 126, tone: 'warning' }),
+              edgePath({ d: 'M 748 310 L 798 310', label: '[28] ปิดห้องขับ', lx: 773, ly: 284, lw: 90, tone: 'muted' })
+            ].join('');
+
+            const nodes = [
+              nodeBox({ id: 'SB', x: 40, y: 74, w: 164, h: 80, code: 'SB / FS / SR', title: 'โหมดก่อนสับเปลี่ยน', sub: 'รถต้องจอดสนิท (v = 0)', tone: 'neutral' }),
+              nodeBox({ id: 'SH', x: 284, y: 72, w: 192, h: 84, code: 'SH', title: 'Shunting Mode', sub: '≤25 • ถอยได้ • งด Trans.', tone: 'warning' }),
+              nodeBox({ id: 'SB', x: 560, y: 54, w: 156, h: 74, code: 'SB', title: 'Stand By', sub: 'จบการสับเปลี่ยน', tone: 'neutral' }),
+              nodeBox({ id: 'SR', x: 774, y: 54, w: 144, h: 74, code: 'SR', title: 'เข้า SR ออกย่าน', sub: 'ก่อนเสา ETCS ต้นแรก', tone: 'primary' }),
+              nodeBox({ id: 'TR', x: 560, y: 146, w: 198, h: 52, code: 'TR', title: 'Trip (EB ค้าง)', sub: '', tone: 'error', dashed: true }),
+              nodeBox({ id: 'FS', x: 40, y: 270, w: 164, h: 80, code: 'FS / OS', title: 'เดินรถในเขต L1', sub: 'เข้าเขตอุโมงค์/สะพาน', tone: 'success' }),
+              nodeBox({ id: 'RV_AREA', x: 284, y: 270, w: 192, h: 80, code: 'AREA', title: 'REVERSING POSSIBLE', sub: 'ข้อความ DMI (ID 285)', tone: 'primary' }),
+              nodeBox({ id: 'RV', x: 560, y: 268, w: 188, h: 84, code: 'RV', title: 'Reversing Mode', sub: 'คุมระยะถอย • เกิน→EB', tone: 'warning' }),
+              nodeBox({ id: 'SB', x: 798, y: 270, w: 120, h: 80, code: 'SB', title: 'Stand By', sub: 'เริ่ม SOM ใหม่', tone: 'neutral' })
+            ].join('');
+
+            return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-5"><title id="svg-title-5">เวิร์กโฟลว์สับเปลี่ยนและถอยหลังฉุกเฉิน</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
+          }
+        },
+        {
+          id: 'coupled',
+          tabLabel: '6. รถพ่วง (SL / NL)',
+          title: 'เคส 6: รถจักรพ่วงหลายคัน — Sleeping (SL) และ Non-Leading (NL)',
+          levels: 'Level 0 • Level 1',
+          objective: 'แยกการทำงานของรถจักรตัวรองแบบต่อสายควบคุมระยะไกล (MU → SL) กับแบบพ่วง Tandem ที่มี พขร. นั่งคุม (NL)',
+          params: ['SL: อัตโนมัติ (MU)', 'NL: เลือกเอง + Ack 298', 'งดสั่ง SB จาก BG error', 'NL บันทึก JRU'],
+          defaultNode: 'NL',
+          renderSvg: () => {
+            const vb = '0 0 960 400';
+            const zones = [
+              zoneBox(24, 24, 912, 168, 'A. พ่วง Multiple Unit (MU) — ต่อสายควบคุมระยะไกลจากหัวรถจักรนำ', 'neutral'),
+              zoneBox(24, 210, 912, 168, 'B. พ่วง Tandem — ไม่ต่อสายควบคุม มี พขร. ประจำหัวรถจักรตัวรอง', 'primary')
+            ].join('');
+
+            const edges = [
+              edgePath({ d: 'M 224 108 L 352 108', label: '[14] ปิดทุกห้อง + SL Signal', lx: 288, ly: 82, lw: 144, tone: 'muted' }),
+              edgePath({ d: 'M 608 108 L 732 108', label: '[2/3] เปิดห้อง/สัญญาณหาย', lx: 670, ly: 82, lw: 140, tone: 'primary' }),
+              edgePath({ d: 'M 224 294 L 352 294', label: '[46] NL Signal + Ack 298', lx: 288, ly: 268, lw: 142, tone: 'primary' }),
+              edgePath({ d: 'M 608 294 L 732 294', label: '[47/28] Stop NL / ปิดห้อง', lx: 670, ly: 268, lw: 140, tone: 'muted' })
+            ].join('');
+
+            const nodes = [
+              nodeBox({ id: 'SB', x: 44, y: 68, w: 180, h: 80, code: 'SB', title: 'Stand By (ตัวรอง)', sub: 'รถจอดสนิท (v = 0)', tone: 'neutral' }),
+              nodeBox({ id: 'SL', x: 352, y: 66, w: 256, h: 84, code: 'SL', title: 'Sleeping Mode', sub: 'DMI ดับ • อ่าน Balise • งด SB error', tone: 'neutral' }),
+              nodeBox({ id: 'SB', x: 732, y: 68, w: 184, h: 80, code: 'SB', title: 'Stand By', sub: 'พร้อมทำ SOM ต่อ', tone: 'neutral' }),
+              nodeBox({ id: 'SB', x: 44, y: 254, w: 180, h: 80, code: 'SB / FS / SH', title: 'โหมดตั้งต้น (ตัวรอง)', sub: 'รถจอดสนิท (v = 0)', tone: 'primary' }),
+              nodeBox({ id: 'NL', x: 352, y: 252, w: 256, h: 84, code: 'NL', title: 'Non-Leading Mode', sub: 'ไม่คุ้มครอง • โชว์ V+Track Cond • JRU', tone: 'primary' }),
+              nodeBox({ id: 'SB', x: 732, y: 254, w: 184, h: 80, code: 'SB', title: 'Stand By', sub: 'เฉพาะเมื่อรถจอดสนิท', tone: 'neutral' })
+            ].join('');
+
+            return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-6"><title id="svg-title-6">เวิร์กโฟลว์รถพ่วง SL และ NL</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
+          }
+        },
+        {
+          id: 'fault_iso',
+          tabLabel: '7. ขัดข้อง & ตัดระบบ (SF / IS)',
+          title: 'เคส 7: เหตุขัดข้องด้านความปลอดภัย (SF) และการตัดระบบ (IS)',
+          levels: 'Level 0 • Level 1 (All Levels)',
+          objective: 'ลำดับการทำงานเมื่อ EVC พบข้อขัดข้องร้ายแรง (SF) และการบิดกุญแจ Isolation (IS) รวมถึงขั้นตอนเฉพาะเพื่อกลับเข้าสู่ระบบ',
+          params: ['Priority: IS (-p1-) > NP (-p2-) > SF (-p3-)', 'IS: ไม่มี Transition ออกปกติ', 'QSY: Off ATPB → Un-isolate → On ATPB'],
+          defaultNode: 'IS',
+          renderSvg: () => {
+            const vb = '0 0 960 410';
+            const zones = [
+              zoneBox(24, 24, 912, 168, 'A. กรณีระบบขัดข้อง — System Failure (SF) Priority -p3-', 'error'),
+              zoneBox(24, 210, 912, 174, 'B. กรณีตัดแยกระบบ — Isolation (IS) Priority -p1- และขั้นตอนกู้คืนเฉพาะ', 'error')
+            ].join('');
+
+            const edges = [
+              edgePath({ d: 'M 212 108 L 308 108', label: '[13] Safety Fault', lx: 260, ly: 82, lw: 108, tone: 'error' }),
+              edgePath({ d: 'M 512 92 L 640 92', label: '[29] ปิดไฟรีเซ็ต', lx: 576, ly: 66, lw: 98, tone: 'primary' }),
+              edgePath({ d: 'M 410 150 L 410 218 L 352 218 L 352 254', label: '[1] จอด + บิด Isolation', lx: 460, ly: 202, lw: 130, tone: 'error', dashed: true }),
+              edgePath({ d: 'M 212 296 L 266 296', label: '[1] บิด Isolation', lx: 239, ly: 270, lw: 98, tone: 'error' }),
+              edgePath({ d: 'M 482 296 L 578 296', label: 'Off ATPB + คืนกุญแจ', lx: 530, ly: 270, lw: 122, tone: 'primary', dashed: true }),
+              edgePath({ d: 'M 728 296 L 788 296', label: '[4] On ATPB', lx: 758, ly: 270, lw: 78, tone: 'primary' }),
+              edgePath({ d: 'M 790 92 L 845 92 Q 853 92 853 100 L 853 254', label: '[4] เปิดไฟใหม่', lx: 853, ly: 172, lw: 88, tone: 'primary', dashed: true })
+            ].join('');
+
+            const nodes = [
+              nodeBox({ id: 'FS', x: 40, y: 68, w: 172, h: 80, code: 'ANY MODE', title: 'กำลังใช้งาน ETCS', sub: '(SL/NL จำ fault ไว้ก่อน)', tone: 'primary' }),
+              nodeBox({ id: 'SF', x: 308, y: 66, w: 204, h: 84, code: 'SF', title: 'System Failure', sub: 'EB ถาวร • ห้ามเดินรถต่อ', tone: 'error' }),
+              nodeBox({ id: 'NP', x: 640, y: 54, w: 150, h: 74, code: 'NP', title: 'No Power', sub: 'Off ATPB เพื่อรีเซ็ต', tone: 'neutral' }),
+              nodeBox({ id: 'TR', x: 40, y: 256, w: 172, h: 80, code: 'ALL MODES', title: 'ทุกโหมด (รวม SF/TR)', sub: 'สวิตช์มีซีล + ลง JRU', tone: 'neutral' }),
+              nodeBox({ id: 'IS', x: 266, y: 254, w: 216, h: 84, code: 'IS', title: 'Isolation Mode', sub: 'ตัดวงจรเบรก • พขร.100%', tone: 'error', dashed: true }),
+              nodeBox({ id: 'NP', x: 578, y: 256, w: 150, h: 80, code: 'NP', title: 'No Power (Reset)', sub: 'QSY: EB ~80 วินาที', tone: 'error' }),
+              nodeBox({ id: 'SB', x: 788, y: 256, w: 130, h: 80, code: 'SB', title: 'Stand By', sub: 'เริ่ม SOM ใหม่', tone: 'neutral' })
+            ].join('');
+
+            return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-7"><title id="svg-title-7">เวิร์กโฟลว์ขัดข้องและตัดระบบ</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
+          }
+        }
+      ];
+
+      let activeCaseIdx = 0;
+      let activeNodeId = CASES[0].defaultNode;
+      // Zoom mode: 'fit' (100% container width) or numeric percentage (100..180 based on 860px)
+      let zoomMode = window.innerWidth < 768 ? 'fit' : '100';
+      let zoomPercent = 100;
+
+      const tabsBar = document.getElementById('tabsBar');
+      const caseCounter = document.getElementById('caseCounter');
+      const caseTitle = document.getElementById('caseTitle');
+      const caseLevels = document.getElementById('caseLevels');
+      const caseObjective = document.getElementById('caseObjective');
+      const caseParams = document.getElementById('caseParams');
+      const diagramHost = document.getElementById('diagramHost');
+      const tabFootNote = document.getElementById('tabFootNote');
+      const prevCaseBtn = document.getElementById('prevCaseBtn');
+      const nextCaseBtn = document.getElementById('nextCaseBtn');
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+      const zoomFitBtn = document.getElementById('zoomFitBtn');
+      const zoom100Btn = document.getElementById('zoom100Btn');
+      const zoomInBtn = document.getElementById('zoomInBtn');
+      const zoomStatus = document.getElementById('zoomStatus');
+
+      const inspectorPanel = document.getElementById('inspectorPanel');
+      const jumpLabel = document.getElementById('jumpLabel');
+      const jumpToInspectorBtn = document.getElementById('jumpToInspectorBtn');
+
+      const inspBadge = document.getElementById('inspBadge');
+      const inspTitle = document.getElementById('inspTitle');
+      const inspSubtitle = document.getElementById('inspSubtitle');
+      const inspProv = document.getElementById('inspProv');
+      const inspLevels = document.getElementById('inspLevels');
+      const inspEntry = document.getElementById('inspEntry');
+      const inspSup = document.getElementById('inspSup');
+      const inspExit = document.getElementById('inspExit');
+      const inspRefs = document.getElementById('inspRefs');
+
+      // Theme persistence
+      function getEffectiveTheme() {
+        const explicit = document.documentElement.getAttribute('data-theme');
+        if (explicit === 'dark' || explicit === 'light') return explicit;
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      function updateThemeButton() {
+        const current = getEffectiveTheme();
+        themeToggleBtn.textContent = current === 'dark' ? '☀️ ธีมสว่าง' : '🌙 ธีมมืด';
+      }
+
+      try {
+        const savedTheme = localStorage.getItem('etcs_theme');
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+          document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+      } catch (_) {}
+      updateThemeButton();
+
+      themeToggleBtn.addEventListener('click', () => {
+        const next = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try {
+          localStorage.setItem('etcs_theme', next);
+        } catch (_) {}
+        updateThemeButton();
+      });
+
+      function applyZoom() {
+        const svg = diagramHost.querySelector('svg');
+        if (!svg) return;
+        if (zoomMode === 'fit') {
+          svg.style.width = '100%';
+          svg.style.minWidth = '0px';
+          zoomStatus.textContent = 'Fit';
+        } else {
+          const px = Math.round(860 * (zoomPercent / 100));
+          svg.style.width = zoomPercent === 100 ? '100%' : `${px}px`;
+          svg.style.minWidth = `${px}px`;
+          zoomStatus.textContent = `${zoomPercent}%`;
+        }
+        zoomFitBtn.classList.toggle('is-active', zoomMode === 'fit');
+        zoom100Btn.classList.toggle('is-active', zoomMode === 'custom' && zoomPercent === 100);
+      }
+
+      zoomFitBtn.addEventListener('click', () => {
+        zoomMode = 'fit';
+        applyZoom();
+      });
+
+      zoom100Btn.addEventListener('click', () => {
+        zoomMode = 'custom';
+        zoomPercent = 100;
+        applyZoom();
+      });
+
+      zoomInBtn.addEventListener('click', () => {
+        if (zoomMode === 'fit') {
+          zoomMode = 'custom';
+          zoomPercent = 120;
+        } else {
+          zoomPercent = Math.min(180, zoomPercent + 20);
+        }
+        applyZoom();
+      });
+
+      zoomOutBtn.addEventListener('click', () => {
+        if (zoomMode === 'fit') return;
+        if (zoomPercent <= 100) {
+          zoomMode = 'fit';
+        } else {
+          zoomPercent = Math.max(100, zoomPercent - 20);
+        }
+        applyZoom();
+      });
+
+      // Normalize initial desktop mode label
+      if (zoomMode === '100') {
+        zoomMode = 'custom';
+        zoomPercent = 100;
+      }
+
+      function renderTabs() {
+        tabsBar.innerHTML = CASES.map((c, idx) => `
+          <button
+            type="button"
+            role="tab"
+            aria-selected="${idx === activeCaseIdx ? 'true' : 'false'}"
+            data-tab-idx="${idx}"
+            class="tab-btn"
+          >
+            ${c.tabLabel}
+          </button>
+        `).join('');
+
+        tabsBar.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            selectCase(Number(btn.dataset.tabIdx));
+            if (btn.scrollIntoView) {
+              btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+          });
+        });
+      }
+
+      function flashInspector() {
+        inspectorPanel.classList.remove('is-highlighted');
+        void inspectorPanel.offsetWidth;
+        inspectorPanel.classList.add('is-highlighted');
+        window.setTimeout(() => {
+          inspectorPanel.classList.remove('is-highlighted');
+        }, 1200);
+      }
+
+      function renderInspector(nodeId, fromUserInteraction) {
+        const info = NODE_DETAILS[nodeId] || NODE_DETAILS.FS;
+        activeNodeId = nodeId;
+
+        const toneVar =
+          info.tone === 'success' ? 'var(--success)' :
+          info.tone === 'warning' ? 'var(--warning)' :
+          info.tone === 'error' ? 'var(--error)' :
+          info.tone === 'neutral' ? 'var(--muted-foreground)' : 'var(--primary)';
+
+        inspBadge.textContent = info.code;
+        inspBadge.style.color = toneVar;
+        inspBadge.style.borderColor = toneVar;
+        inspBadge.style.backgroundColor = `color-mix(in srgb, ${toneVar} 14%, var(--card))`;
+
+        inspTitle.textContent = info.title;
+        inspSubtitle.textContent = info.subtitle;
+        inspProv.textContent = `Provenance: ${info.provenance}`;
+        inspLevels.textContent = info.levels;
+
+        inspEntry.innerHTML = info.entry.map(item => `<li>${item}</li>`).join('');
+        inspSup.innerHTML = info.supervision.map(item => `<li>${item}</li>`).join('');
+        inspExit.innerHTML = info.exit.map(item => `<li>${item}</li>`).join('');
+        inspRefs.textContent = info.refs;
+
+        jumpLabel.textContent = `โหมดที่เลือก: ${info.code} — อัปเดตแล้ว`;
+
+        diagramHost.querySelectorAll('.svg-node').forEach(el => {
+          el.classList.toggle('is-selected', el.dataset.nodeId === nodeId);
+        });
+
+        if (fromUserInteraction) {
+          flashInspector();
+        }
+      }
+
+      jumpToInspectorBtn.addEventListener('click', () => {
+        inspectorPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        flashInspector();
+      });
+
+      function selectCase(idx) {
+        activeCaseIdx = (idx + CASES.length) % CASES.length;
+        const c = CASES[activeCaseIdx];
+
+        renderTabs();
+        caseCounter.textContent = `${activeCaseIdx + 1} / ${CASES.length}`;
+        caseTitle.textContent = c.title;
+        caseLevels.textContent = c.levels;
+        caseObjective.textContent = c.objective;
+        caseParams.innerHTML = c.params
+          .map(p => `<span class="pill">${p}</span>`)
+          .join('');
+
+        if (c.footNote) {
+          tabFootNote.textContent = c.footNote;
+          tabFootNote.classList.remove('hidden');
+        } else {
+          tabFootNote.textContent = '';
+          tabFootNote.classList.add('hidden');
+        }
+
+        diagramHost.innerHTML = c.renderSvg();
+        applyZoom();
+
+        diagramHost.querySelectorAll('.svg-node').forEach(node => {
+          const nid = node.dataset.nodeId;
+          node.addEventListener('click', () => renderInspector(nid, true));
+          node.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              renderInspector(nid, true);
+            }
+          });
+        });
+
+        renderInspector(c.defaultNode, false);
+      }
+
+      prevCaseBtn.addEventListener('click', () => selectCase(activeCaseIdx - 1));
+      nextCaseBtn.addEventListener('click', () => selectCase(activeCaseIdx + 1));
+
+      document.addEventListener('keydown', (e) => {
+        const tag = (document.activeElement && document.activeElement.tagName) || '';
+        if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          selectCase(activeCaseIdx - 1);
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          selectCase(activeCaseIdx + 1);
+        }
+      });
+
+      selectCase(0);
+    })();
+  </script>
+</body>
+</html>
