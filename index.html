@@ -842,7 +842,7 @@
           exit: [
             'ผ่าน Balise Transition L0→L1 แล้วได้ MA+SSP+Gradient ([25]) → FS (หรือ OS [34] / SH [61] / Override→SR [44])',
             'จอดสนิทเลือก SH ([5]) / ปิดห้องขับ ([28]) → SB',
-            'รับ Trip Order / UES ([20]/[67]) → TR'
+            'ข้ามเข้า L1 แล้วเจอ Trip Order ([67]) / ไม่มี MA ([39]) หรือ UES ([20]) → TR (L0 ล้วนๆ ไม่มี EOA จึงไม่ Trip จากเสาข้างทาง)'
           ],
           refs: 'SUBSET-026-4 §4.4.10, §4.6.3 [21][25][34][44][60][61][62][67] • SRT ST6 §4.1, §4.4, §5.1.8, App.1 • PRO-9018 §9.2.1, §9.7–9.8'
         },
@@ -926,6 +926,7 @@
             'อัตโนมัติทันทีหลังรถหยุดสนิทและ พขร. กด Ack Train Trip จากโหมด TR ใน Level 1 ([7])'
           ],
           supervision: [
+            'โหมด PT ใช้ได้เฉพาะ Level 1/2/3 เท่านั้น — ไม่มีใน Level 0 ([7])',
             'ปลดคำสั่ง Emergency Brake (บน QSY/Siemens ต้อง Reset มือห้ามล้อตามขั้นตอนร่วมด้วย) แต่ยังแสดงสาเหตุ Trip ค้างบน DMI',
             'ห้ามเคลื่อนรถไปข้างหน้า (Reverse Movement Protection กลับทิศ — เดินหน้าสั่งเบรก)',
             'อนุญาตให้ถอยหลังได้เฉพาะภายในระยะ D_NVPOTRP = 2 m (ค่า ST6) — ถอยเกิน 2 m ระบบสั่ง Service Brake (ID 307)'
@@ -1301,14 +1302,14 @@
           objective: 'แสดงความสัมพันธ์หลักของโหมดทั้ง 14 โหมดที่ใช้งานบนเส้นทาง รฟท. ST6 พร้อมกลุ่มเตรียมการ เดินรถ พ่วงพหุ และฉุกเฉิน/ขัดข้อง',
           params: ['Baseline: SRS 2.3.0d / 3.6.0', 'NID_C = 832', 'V_NVSTFF/SH/OS = 25 km/h', 'V_NVUNFIT = 120 km/h'],
           defaultNode: 'FS',
-          footNote: 'หมายเหตุมาตรฐานเพิ่มเติม (ไม่ได้ใช้บน ST6): SN (National System / STM — ST6 §5.1.14 ไม่ใช้งาน), LS (Limited Supervision — เพิ่มใน SRS v3.6.0 §4.4.19), PS (Passive Shunting — เพิ่มใน SRS v3.6.0 §4.4.20)',
+          footNote: 'หมายเหตุ: ในเขต L0 ล้วนๆ (UN) ไม่มี EOA จึงไม่ Trip จากเสาสัญญาณทั่วไป (UN→TR เกิดเฉพาะตอนข้ามเข้า L1 เจอ Trip Order [67] / ไม่มี MA [39] หรือ UES [20]) และ L0 ไม่มีโหมด PT • โหมดมาตรฐานที่ไม่ได้ใช้บน ST6: SN (ST6 §5.1.14), LS (v3.6.0 §4.4.19), PS (v3.6.0 §4.4.20)',
           renderSvg: () => {
-            const vb = '0 0 1380 660';
+            const vb = '0 0 1380 676';
             const zones = [
               zoneBox(20, 20, 412, 174, '1. เปิดระบบ & เตรียมพร้อม', 'neutral'),
               zoneBox(20, 224, 412, 174, '3. รถจักรพ่วงหลายคัน (MU / Tandem)', 'neutral'),
               zoneBox(536, 20, 824, 378, '2. โหมดเดินรถหลัก & สับเปลี่ยน / ถอยหลัง (L1 / L0)', 'success'),
-              zoneBox(20, 464, 1340, 176, '4. โหมดฉุกเฉิน / ฝ่าสัญญาณ / ขัดข้อง / ตัดระบบ', 'error')
+              zoneBox(20, 480, 1340, 176, '4. โหมดฉุกเฉิน / ฝ่าสัญญาณ / ขัดข้อง / ตัดระบบ', 'error')
             ].join('');
 
             const edges = [
@@ -1332,16 +1333,16 @@
               edgePath({ d: 'M 1056 122 L 1178 122', label: ['[59]', 'ถอยฉุกเฉิน'], lx: 1117, ly: 122, lw: 90, tone: 'warning', dashed: true }),
               // OS -> SH (representing L1 active modes -> SH)
               edgePath({ d: 'M 1056 326 L 1178 326', label: ['[5] จอด', 'Shunting'], lx: 1117, ly: 326, lw: 86, tone: 'warning', dashed: true }),
-              // Driving -> TR (via y=428 corridor)
-              edgePath({ d: 'M 646 376 L 646 420 Q 646 428 638 428 L 160 428 Q 152 428 152 436 L 152 514', label: 'ฝ่า EOA / คำสั่ง Trip', lx: 344, ly: 428, lw: 144, tone: 'error' }),
+              // L1 Driving -> TR (originates from L1 column OS bottom, NOT UN/L0)
+              edgePath({ d: 'M 916 374 L 916 410 Q 916 418 908 418 L 160 418 Q 152 418 152 426 L 152 530', label: 'L1: ฝ่า EOA / คำสั่ง Trip', lx: 316, ly: 418, lw: 162, tone: 'error' }),
               // TR -> PT
-              edgePath({ d: 'M 256 564 L 394 564', label: ['[7] Ack', '(Level 1)'], lx: 325, ly: 564, lw: 84, tone: 'warning' }),
-              // PT -> SR (rises cleanly through corridor x=520)
-              edgePath({ d: 'M 520 516 L 520 156 Q 520 148 528 148 L 558 148', label: ['[8] Start', 'กลับ SR'], lx: 520, ly: 428, lw: 84, tone: 'primary', dashed: true }),
-              // Driving -> SF
-              edgePath({ d: 'M 962 376 L 962 420 Q 962 428 954 428 L 858 428 Q 850 428 850 436 L 850 514', label: ['[13] Safety Fault'], lx: 904, ly: 428, lw: 124, tone: 'error', dashed: true }),
+              edgePath({ d: 'M 256 580 L 394 580', label: ['[7] Ack', '(Level 1)'], lx: 325, ly: 580, lw: 84, tone: 'warning' }),
+              // PT -> SR (rises cleanly through corridor x=500, label at y=454 below y=418)
+              edgePath({ d: 'M 500 532 L 500 156 Q 500 148 508 148 L 558 148', label: '[8] Start กลับ SR', lx: 500, ly: 454, lw: 118, tone: 'primary', dashed: true }),
+              // Any active -> SF
+              edgePath({ d: 'M 1016 398 L 1016 446 Q 1016 454 1008 454 L 858 454 Q 850 454 850 462 L 850 530', label: '[13] Safety Fault', lx: 938, ly: 454, lw: 122, tone: 'error', dashed: true }),
               // SF -> IS
-              edgePath({ d: 'M 954 564 L 1090 564', label: ['[1] บิดกุญแจ', 'Isolation'], lx: 1022, ly: 564, lw: 92, tone: 'error', dashed: true })
+              edgePath({ d: 'M 954 580 L 1090 580', label: ['[1] บิดกุญแจ', 'Isolation'], lx: 1022, ly: 580, lw: 92, tone: 'error', dashed: true })
             ].join('');
 
             const nodes = [
@@ -1359,10 +1360,10 @@
               nodeBox({ id: 'OS', x: 868, y: 278, w: 188, h: 96, code: 'OS', title: 'On Sight', sub: 'Call-On ≤ 25 km/h', tone: 'warning' }),
               nodeBox({ id: 'SH', x: 1180, y: 278, w: 162, h: 96, code: 'SH', title: 'Shunting', sub: 'สับเปลี่ยน ≤ 25', tone: 'warning' }),
               // Zone 4: Emergency / Fault
-              nodeBox({ id: 'TR', x: 48, y: 516, w: 208, h: 96, code: 'TR', title: 'Trip Mode', sub: 'EB ค้าง (จอด + Ack)', tone: 'error' }),
-              nodeBox({ id: 'PT', x: 396, y: 516, w: 208, h: 96, code: 'PT', title: 'Post Trip (L1)', sub: 'ถอยหลังได้ ≤ 2 m', tone: 'error' }),
-              nodeBox({ id: 'SF', x: 746, y: 516, w: 208, h: 96, code: 'SF', title: 'System Failure', sub: 'EB ถาวร (ขัดข้อง)', tone: 'error' }),
-              nodeBox({ id: 'IS', x: 1092, y: 516, w: 212, h: 96, code: 'IS', title: 'Isolation Mode', sub: 'ตัดระบบ (พขร. 100%)', tone: 'error', dashed: true })
+              nodeBox({ id: 'TR', x: 48, y: 532, w: 208, h: 96, code: 'TR', title: 'Trip Mode', sub: 'EB ค้าง (จอด + Ack)', tone: 'error' }),
+              nodeBox({ id: 'PT', x: 396, y: 532, w: 208, h: 96, code: 'PT', title: 'Post Trip (L1)', sub: 'ถอยหลังได้ ≤ 2 m', tone: 'error' }),
+              nodeBox({ id: 'SF', x: 746, y: 532, w: 208, h: 96, code: 'SF', title: 'System Failure', sub: 'EB ถาวร (ขัดข้อง)', tone: 'error' }),
+              nodeBox({ id: 'IS', x: 1092, y: 532, w: 212, h: 96, code: 'IS', title: 'Isolation Mode', sub: 'ตัดระบบ (พขร. 100%)', tone: 'error', dashed: true })
             ].join('');
 
             return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-0"><title id="svg-title-0">ภาพรวมเวิร์กโฟลว์โหมดการทำงาน ETCS</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
@@ -1490,7 +1491,7 @@
             const zones = [
               zoneBox(20, 20, 740, 212, 'ระยะเกิดเหตุและบังคับหยุด (All Levels)', 'error'),
               zoneBox(788, 20, 532, 276, 'การกู้คืนใน Level 1 (ผ่าน Post Trip)', 'warning'),
-              zoneBox(788, 324, 532, 216, 'การกู้คืนใน Level 0 (ไม่ผ่าน PT)', 'primary')
+              zoneBox(788, 324, 532, 216, 'การกู้คืนเมื่อ Trip ขณะอยู่ L0 (เช่น SH ฝ่า Stop [49] — ไม่มี PT)', 'primary')
             ].join('');
 
             const edges = [
@@ -1505,7 +1506,7 @@
             ].join('');
 
             const nodes = [
-              nodeBox({ id: 'TRIP_CAUSE', x: 36, y: 76, w: 184, h: 96, code: 'TRIGGER', title: 'สาเหตุ Trip', sub: 'EOA / Balise / Stop', tone: 'error' }),
+              nodeBox({ id: 'TRIP_CAUSE', x: 36, y: 76, w: 184, h: 96, code: 'TRIGGER', title: 'สาเหตุ Trip', sub: 'L1: EOA/Balise • SH: Stop', tone: 'error' }),
               nodeBox({ id: 'TR', x: 318, y: 76, w: 178, h: 96, code: 'TR', title: 'Trip Mode', sub: 'EB ค้าง ปลดไม่ได้', tone: 'error' }),
               nodeBox({ id: 'TR_ACK', x: 588, y: 76, w: 156, h: 96, code: 'ACK', title: 'จอด + กด Ack', sub: 'ID 265', tone: 'warning' }),
               nodeBox({ id: 'PT', x: 816, y: 76, w: 196, h: 96, code: 'PT', title: 'Post Trip', sub: 'ถอย ≤ 2 m • ห้ามหน้า', tone: 'error' }),
