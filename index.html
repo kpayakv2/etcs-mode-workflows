@@ -74,6 +74,8 @@
     html, body {
       margin: 0;
       padding: 0;
+      width: 100%;
+      overflow-x: clip;
       background-color: var(--background);
       color: var(--foreground);
       font-family: 'Noto Sans Thai', 'Sarabun', 'Thonburi', 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -88,28 +90,43 @@
     }
 
     .container {
-      max-width: 1280px;
+      width: 100%;
+      max-width: 1380px;
       margin: 0 auto;
       padding: 16px;
-      padding-left: max(16px, env(safe-area-inset-left));
-      padding-right: max(16px, env(safe-area-inset-right));
+      padding-left: max(14px, env(safe-area-inset-left));
+      padding-right: max(14px, env(safe-area-inset-right));
       padding-bottom: max(24px, env(safe-area-inset-bottom));
       display: flex;
       flex-direction: column;
       gap: 14px;
+      min-width: 0;
+    }
+
+    .container > * {
+      min-width: 0;
+      max-width: 100%;
     }
 
     .card {
       background-color: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 16px;
+      padding: 14px 16px;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .header-card {
       display: flex;
       flex-direction: column;
       gap: 12px;
+    }
+
+    .header-card > div,
+    .case-banner > div {
+      min-width: 0;
+      max-width: 100%;
     }
 
     @media (min-width: 960px) {
@@ -145,9 +162,20 @@
       color: var(--muted-foreground);
     }
 
+    .card > *,
+    .diagram-scroll,
+    .tabs-bar {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    h1, h2, h3, p {
+      overflow-wrap: break-word;
+    }
+
     h1 {
       margin: 4px 0 2px;
-      font-size: 19px;
+      font-size: clamp(16px, 4.5vw, 19px);
       font-weight: 700;
       letter-spacing: -0.01em;
       color: var(--foreground);
@@ -490,13 +518,13 @@
 
     .inspector-grid {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 12px;
     }
 
     @media (min-width: 768px) {
       .inspector-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
 
@@ -505,6 +533,8 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px;
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     .info-box h4 {
@@ -532,6 +562,8 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 6px;
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
   </style>
 </head>
@@ -1156,6 +1188,9 @@
         }
       };
 
+      const SANS_FONT = "'Noto Sans Thai', 'Sarabun', 'Thonburi', 'Tahoma', sans-serif";
+      const MONO_FONT = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
+
       function markerDefs() {
         return `
           <defs>
@@ -1181,14 +1216,16 @@
       function zoneBox(x, y, w, h, title, tone) {
         const stroke = tone === 'error' ? 'var(--error)' : tone === 'success' ? 'var(--success)' : tone === 'warning' ? 'var(--warning)' : 'var(--border)';
         return `
-          <g>
-            <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="var(--content)" stroke="${stroke}" stroke-width="1" stroke-dasharray="4 4" opacity="0.9" />
-            <text x="${x + 12}" y="${y + 20}" fill="var(--muted-foreground)" font-size="12" font-weight="600">${title}</text>
+          <g class="zone-group">
+            <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="var(--content)" stroke="${stroke}" stroke-width="1" stroke-dasharray="4 4" opacity="0.92" />
+            <text class="zone-title" x="${x + 16}" y="${y + 24}" fill="var(--muted-foreground)" font-size="13" font-weight="700" font-family="${SANS_FONT}">${title}</text>
           </g>
         `;
       }
 
       function nodeBox({ id, x, y, w, h, code, title, sub, tone = 'primary', dashed = false }) {
+        const hasSub = Boolean(sub);
+        const boxH = h || (hasSub ? 96 : 64);
         const colorVar =
           tone === 'success' ? 'var(--success)' :
           tone === 'warning' ? 'var(--warning)' :
@@ -1200,19 +1237,20 @@
           : `color-mix(in srgb, ${colorVar} 10%, var(--card))`;
 
         const tagBg = `color-mix(in srgb, ${colorVar} 18%, var(--card))`;
+        const tagW = Math.max(44, code.length * 8 + 18);
         const cx = x + w / 2;
         const dashAttr = dashed ? 'stroke-dasharray="5 3"' : '';
-        const hasSub = Boolean(sub);
+        const titleY = hasSub ? y + 52 : y + 48;
 
         return `
-          <g class="svg-node" data-node-id="${id}" tabindex="0" role="button" aria-label="${code}: ${title}">
-            <rect class="node-ring" x="${x - 4}" y="${y - 4}" width="${w + 8}" height="${h + 8}" rx="9" fill="none" stroke="${colorVar}" stroke-width="2.5" />
-            <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="var(--card)" />
-            <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${bgFill}" stroke="${colorVar}" stroke-width="1.75" ${dashAttr} />
-            <rect x="${x + 10}" y="${y + 8}" width="${Math.max(36, code.length * 9 + 14)}" height="18" rx="3" fill="${tagBg}" stroke="${colorVar}" stroke-width="1" />
-            <text x="${x + 10 + Math.max(36, code.length * 9 + 14) / 2}" y="${y + 21}" text-anchor="middle" fill="${colorVar}" font-size="12" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">${code}</text>
-            <text x="${cx}" y="${y + (hasSub ? 44 : 49)}" text-anchor="middle" fill="var(--foreground)" font-size="13" font-weight="600">${title}</text>
-            ${hasSub ? `<text x="${cx}" y="${y + 62}" text-anchor="middle" fill="var(--muted-foreground)" font-size="12">${sub}</text>` : ''}
+          <g class="svg-node" data-node-id="${id}" data-box-w="${w}" tabindex="0" role="button" aria-label="${code}: ${title}">
+            <rect class="node-ring" x="${x - 4}" y="${y - 4}" width="${w + 8}" height="${boxH + 8}" rx="10" fill="none" stroke="${colorVar}" stroke-width="2.5" />
+            <rect x="${x}" y="${y}" width="${w}" height="${boxH}" rx="7" fill="var(--card)" />
+            <rect x="${x}" y="${y}" width="${w}" height="${boxH}" rx="7" fill="${bgFill}" stroke="${colorVar}" stroke-width="1.75" ${dashAttr} />
+            <rect x="${x + 12}" y="${y + 10}" width="${tagW}" height="20" rx="4" fill="${tagBg}" stroke="${colorVar}" stroke-width="1" />
+            <text x="${x + 12 + tagW / 2}" y="${y + 24}" text-anchor="middle" fill="${colorVar}" font-size="11" font-weight="700" font-family="${MONO_FONT}">${code}</text>
+            <text class="node-title" x="${cx}" y="${titleY}" text-anchor="middle" fill="var(--foreground)" font-size="14" font-weight="700" font-family="${SANS_FONT}">${title}</text>
+            ${hasSub ? `<text class="node-sub" x="${cx}" y="${y + 76}" text-anchor="middle" fill="var(--muted-foreground)" font-size="12" font-weight="400" font-family="${SANS_FONT}">${sub}</text>` : ''}
           </g>
         `;
       }
@@ -1229,17 +1267,26 @@
 
         let labelSvg = '';
         if (label) {
-          const boxW = lw || Math.max(72, label.length * 7.2 + 16);
-          const boxH = 22;
+          const lines = Array.isArray(label) ? label : [label];
+          const maxLen = Math.max(...lines.map(l => l.length));
+          const boxW = lw || Math.max(72, Math.round(maxLen * 7.8 + 22));
+          const boxH = lines.length > 1 ? 42 : 26;
+          const textLines = lines.length > 1
+            ? `<text x="${lx}" y="${ly - 5}" text-anchor="middle" fill="var(--foreground)" font-size="12" font-weight="600" font-family="${SANS_FONT}">${lines[0]}</text>
+               <text x="${lx}" y="${ly + 12}" text-anchor="middle" fill="var(--foreground)" font-size="12" font-weight="600" font-family="${SANS_FONT}">${lines[1]}</text>`
+            : `<text x="${lx}" y="${ly + 4}" text-anchor="middle" fill="var(--foreground)" font-size="12" font-weight="600" font-family="${SANS_FONT}">${lines[0]}</text>`;
+
           labelSvg = `
-            <rect x="${lx - boxW / 2}" y="${ly - boxH / 2}" width="${boxW}" height="${boxH}" rx="4" fill="var(--card)" stroke="var(--border)" stroke-width="1" />
-            <text x="${lx}" y="${ly + 4}" text-anchor="middle" fill="var(--foreground)" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">${label}</text>
+            <g class="edge-label" data-cx="${lx}" data-cy="${ly}">
+              <rect class="edge-label-bg" x="${lx - boxW / 2}" y="${ly - boxH / 2}" width="${boxW}" height="${boxH}" rx="5" fill="var(--card)" stroke="var(--border)" stroke-width="1" />
+              <g class="edge-label-text">${textLines}</g>
+            </g>
           `;
         }
 
         return `
           <g>
-            <path d="${d}" fill="none" stroke="${stroke}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="${markerEnd}" ${markerStart} ${dashAttr} />
+            <path d="${d}" fill="none" stroke="${stroke}" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" marker-end="${markerEnd}" ${markerStart} ${dashAttr} />
             ${labelSvg}
           </g>
         `;
@@ -1251,51 +1298,71 @@
           tabLabel: '0. ภาพรวมทุกโหมด',
           title: 'ภาพรวมเวิร์กโฟลว์การเปลี่ยนโหมด ETCS (Overview State Map)',
           levels: 'Level 0 • Level 1',
-          objective: 'แสดงความสัมพันธ์หลักของโหมดทั้ง 14 โหมดที่ใช้งานบนเส้นทาง รฟท. ST6 พร้อมกลุ่มเตรียมการ เดินรถ ช่วยเหลือ และฉุกเฉิน/ขัดข้อง',
+          objective: 'แสดงความสัมพันธ์หลักของโหมดทั้ง 14 โหมดที่ใช้งานบนเส้นทาง รฟท. ST6 พร้อมกลุ่มเตรียมการ เดินรถ พ่วงพหุ และฉุกเฉิน/ขัดข้อง',
           params: ['Baseline: SRS 2.3.0d / 3.6.0', 'NID_C = 832', 'V_NVSTFF/SH/OS = 25 km/h', 'V_NVUNFIT = 120 km/h'],
           defaultNode: 'FS',
           footNote: 'หมายเหตุมาตรฐานเพิ่มเติม (ไม่ได้ใช้บน ST6): SN (National System / STM — ST6 §5.1.14 ไม่ใช้งาน), LS (Limited Supervision — เพิ่มใน SRS v3.6.0 §4.4.19), PS (Passive Shunting — เพิ่มใน SRS v3.6.0 §4.4.20)',
           renderSvg: () => {
-            const vb = '0 0 960 480';
+            const vb = '0 0 1380 660';
             const zones = [
-              zoneBox(20, 16, 252, 154, '1. เปิดระบบ & เตรียมพร้อม', 'neutral'),
-              zoneBox(290, 16, 404, 256, '2. โหมดเดินรถหลัก (L1 / L0)', 'success'),
-              zoneBox(712, 16, 228, 256, '3. สับเปลี่ยน ถอยหลัง & พ่วง', 'neutral'),
-              zoneBox(20, 294, 920, 168, '4. โหมดฉุกเฉิน / ฝ่าสัญญาณ / ขัดข้อง / ตัดระบบ', 'error')
+              zoneBox(20, 20, 412, 174, '1. เปิดระบบ & เตรียมพร้อม', 'neutral'),
+              zoneBox(20, 224, 412, 174, '3. รถจักรพ่วงหลายคัน (MU / Tandem)', 'neutral'),
+              zoneBox(536, 20, 824, 378, '2. โหมดเดินรถหลัก & สับเปลี่ยน / ถอยหลัง (L1 / L0)', 'success'),
+              zoneBox(20, 464, 1340, 176, '4. โหมดฉุกเฉิน / ฝ่าสัญญาณ / ขัดข้อง / ตัดระบบ', 'error')
             ].join('');
 
             const edges = [
-              edgePath({ d: 'M 102 90 L 132 90', label: '[4] จ่ายไฟ', lx: 117, ly: 68, lw: 68, tone: 'primary' }),
-              edgePath({ d: 'M 256 82 L 310 82', label: '[8] Start L1', lx: 283, ly: 60, lw: 72, tone: 'primary' }),
-              edgePath({ d: 'M 194 126 L 194 210 Q 194 218 202 218 L 310 218', label: '[60] Start L0', lx: 248, ly: 218, lw: 78, tone: 'primary' }),
-              edgePath({ d: 'M 454 82 L 530 82', label: '[32] MA+SSP', lx: 492, ly: 60, lw: 80, tone: 'success' }),
-              edgePath({ d: 'M 604 120 L 604 182', label: 'OS [15] / FS [32]', lx: 604, ly: 151, lw: 110, tone: 'warning', bidir: true }),
-              edgePath({ d: 'M 454 210 L 492 210 Q 500 210 500 202 L 500 112 Q 500 104 508 104 L 530 104', label: 'L0↔L1 [25/21]', lx: 492, ly: 154, lw: 96, tone: 'primary', bidir: true }),
-              edgePath({ d: 'M 156 126 L 156 270 Q 156 278 164 278 L 774 278 Q 782 278 782 270 L 782 120', label: '[5] Shunting', lx: 472, ly: 278, lw: 84, tone: 'warning', dashed: true }),
-              edgePath({ d: 'M 194 54 L 194 24 Q 194 16 202 16 L 916 16 Q 924 16 924 24 L 924 176', label: '[14/46] MU / Tandem', lx: 560, ly: 16, lw: 128, tone: 'muted', dashed: true }),
-              edgePath({ d: 'M 678 82 L 826 82', label: '[59] RV', lx: 716, ly: 60, lw: 62, tone: 'warning', dashed: true }),
-              edgePath({ d: 'M 352 252 L 352 332 Q 352 340 344 340 L 310 340', label: 'ฝ่า EOA/Trip', lx: 332, ly: 298, lw: 84, tone: 'error' }),
-              edgePath({ d: 'M 310 378 L 368 378', label: '[7] Ack (L1)', lx: 339, ly: 422, lw: 82, tone: 'warning' }),
-              edgePath({ d: 'M 440 340 L 440 318 Q 440 310 432 310 L 292 310 Q 284 310 284 302 L 284 114 Q 284 106 292 106 L 310 106', label: '[8] Start → SR', lx: 284, ly: 244, lw: 92, tone: 'primary', dashed: true }),
-              edgePath({ d: 'M 618 252 L 618 340', label: '[13] Safety Fault', lx: 618, ly: 304, lw: 112, tone: 'error', dashed: true }),
-              edgePath({ d: 'M 692 378 L 764 378', label: '[1] Isolation', lx: 728, ly: 350, lw: 84, tone: 'error', dashed: true })
+              // NP -> SB
+              edgePath({ d: 'M 176 122 L 266 122', label: ['[4]', 'จ่ายไฟ'], lx: 221, ly: 122, lw: 68, tone: 'primary' }),
+              // SB -> NL (vertical at x=364, clear of Zone 3 title)
+              edgePath({ d: 'M 364 170 L 364 276', label: ['[14/46]', 'MU / Tandem'], lx: 364, ly: 212, lw: 92, tone: 'muted', dashed: true }),
+              // SB -> SL (drops down center gap x=230 between SL and NL, then enters SL right edge)
+              edgePath({ d: 'M 304 170 L 304 188 Q 304 196 296 196 L 238 196 Q 230 196 230 204 L 230 318 Q 230 326 222 326 L 214 326', tone: 'muted', dashed: true }),
+              // SB -> SR
+              edgePath({ d: 'M 416 122 L 558 122', label: ['[8]', 'Start L1'], lx: 486, ly: 122, lw: 78, tone: 'primary' }),
+              // SB -> UN (routes through corridor x=446)
+              edgePath({ d: 'M 416 146 L 438 146 Q 446 146 446 154 L 446 318 Q 446 326 454 326 L 558 326', label: ['[60]', 'Start L0'], lx: 472, ly: 220, lw: 76, tone: 'primary' }),
+              // SR -> FS
+              edgePath({ d: 'M 732 122 L 866 122', label: ['[32]', 'MA + SSP'], lx: 799, ly: 122, lw: 84, tone: 'success' }),
+              // FS <-> OS
+              edgePath({ d: 'M 962 172 L 962 276', label: ['[15/32]', 'FS ↔ OS'], lx: 962, ly: 224, lw: 90, tone: 'warning', bidir: true }),
+              // UN <-> FS (via gap between SR/UN and FS/OS)
+              edgePath({ d: 'M 732 316 L 791 316 Q 799 316 799 308 L 799 156 Q 799 148 807 148 L 866 148', label: ['[25/21]', 'L0 ↔ L1'], lx: 799, ly: 224, lw: 86, tone: 'primary', bidir: true }),
+              // FS -> RV
+              edgePath({ d: 'M 1056 122 L 1178 122', label: ['[59]', 'ถอยฉุกเฉิน'], lx: 1117, ly: 122, lw: 90, tone: 'warning', dashed: true }),
+              // OS -> SH (representing L1 active modes -> SH)
+              edgePath({ d: 'M 1056 326 L 1178 326', label: ['[5] จอด', 'Shunting'], lx: 1117, ly: 326, lw: 86, tone: 'warning', dashed: true }),
+              // Driving -> TR (via y=428 corridor)
+              edgePath({ d: 'M 646 376 L 646 420 Q 646 428 638 428 L 160 428 Q 152 428 152 436 L 152 514', label: 'ฝ่า EOA / คำสั่ง Trip', lx: 344, ly: 428, lw: 144, tone: 'error' }),
+              // TR -> PT
+              edgePath({ d: 'M 256 564 L 394 564', label: ['[7] Ack', '(Level 1)'], lx: 325, ly: 564, lw: 84, tone: 'warning' }),
+              // PT -> SR (rises cleanly through corridor x=520)
+              edgePath({ d: 'M 520 516 L 520 156 Q 520 148 528 148 L 558 148', label: ['[8] Start', 'กลับ SR'], lx: 520, ly: 428, lw: 84, tone: 'primary', dashed: true }),
+              // Driving -> SF
+              edgePath({ d: 'M 962 376 L 962 420 Q 962 428 954 428 L 858 428 Q 850 428 850 436 L 850 514', label: ['[13] Safety Fault'], lx: 904, ly: 428, lw: 124, tone: 'error', dashed: true }),
+              // SF -> IS
+              edgePath({ d: 'M 954 564 L 1090 564', label: ['[1] บิดกุญแจ', 'Isolation'], lx: 1022, ly: 564, lw: 92, tone: 'error', dashed: true })
             ].join('');
 
             const nodes = [
-              nodeBox({ id: 'NP', x: 30, y: 54, w: 72, h: 72, code: 'NP', title: 'No Power', sub: 'EB ค้าง', tone: 'error' }),
-              nodeBox({ id: 'SB', x: 132, y: 54, w: 124, h: 72, code: 'SB', title: 'Stand By', sub: 'ทำ SOM • ≤2m', tone: 'neutral' }),
-              nodeBox({ id: 'SR', x: 310, y: 46, w: 144, h: 74, code: 'SR', title: 'Staff Resp.', sub: '≤ 25 km/h', tone: 'primary' }),
-              nodeBox({ id: 'FS', x: 530, y: 46, w: 148, h: 74, code: 'FS', title: 'Full Superv.', sub: 'CSM/TSM/RSM', tone: 'success' }),
-              nodeBox({ id: 'OS', x: 530, y: 184, w: 148, h: 68, code: 'OS', title: 'On Sight', sub: 'Call-On ≤ 25', tone: 'warning' }),
-              nodeBox({ id: 'UN', x: 310, y: 184, w: 144, h: 68, code: 'UN', title: 'Unfitted (L0)', sub: '≤ 120 km/h', tone: 'primary' }),
-              nodeBox({ id: 'SH', x: 726, y: 46, w: 94, h: 74, code: 'SH', title: 'Shunting', sub: '≤ 25', tone: 'warning' }),
-              nodeBox({ id: 'RV', x: 828, y: 46, w: 98, h: 74, code: 'RV', title: 'Reversing', sub: 'ถอยฉุกเฉิน', tone: 'warning', dashed: true }),
-              nodeBox({ id: 'SL', x: 726, y: 180, w: 94, h: 72, code: 'SL', title: 'Sleeping', sub: 'MU พ่วง', tone: 'neutral' }),
-              nodeBox({ id: 'NL', x: 828, y: 180, w: 98, h: 72, code: 'NL', title: 'Non Lead', sub: 'Tandem', tone: 'neutral' }),
-              nodeBox({ id: 'TR', x: 162, y: 340, w: 148, h: 74, code: 'TR', title: 'Trip Mode', sub: 'EB ค้าง (จอด+Ack)', tone: 'error' }),
-              nodeBox({ id: 'PT', x: 368, y: 340, w: 144, h: 74, code: 'PT', title: 'Post Trip', sub: 'ถอย ≤ 2 m (L1)', tone: 'error' }),
-              nodeBox({ id: 'SF', x: 544, y: 340, w: 148, h: 74, code: 'SF', title: 'System Fail', sub: 'EB ถาวร', tone: 'error' }),
-              nodeBox({ id: 'IS', x: 764, y: 340, w: 156, h: 74, code: 'IS', title: 'Isolation', sub: 'ตัดระบบ พขร.100%', tone: 'error', dashed: true })
+              // Zone 1: Startup
+              nodeBox({ id: 'NP', x: 36, y: 74, w: 140, h: 96, code: 'NP', title: 'No Power', sub: 'EB ค้าง (ปิดไฟ)', tone: 'error' }),
+              nodeBox({ id: 'SB', x: 268, y: 74, w: 148, h: 96, code: 'SB', title: 'Stand By', sub: 'ทำ SOM • ≤ 2 m', tone: 'neutral' }),
+              // Zone 3: Coupled
+              nodeBox({ id: 'SL', x: 36, y: 278, w: 176, h: 96, code: 'SL', title: 'Sleeping', sub: 'พ่วง MU (อัตโนมัติ)', tone: 'neutral' }),
+              nodeBox({ id: 'NL', x: 248, y: 278, w: 168, h: 96, code: 'NL', title: 'Non Leading', sub: 'พ่วง Tandem', tone: 'neutral' }),
+              // Zone 2: Driving & Aux
+              nodeBox({ id: 'SR', x: 560, y: 74, w: 172, h: 96, code: 'SR', title: 'Staff Resp.', sub: 'เดินรถ ≤ 25 km/h', tone: 'primary' }),
+              nodeBox({ id: 'FS', x: 868, y: 74, w: 188, h: 96, code: 'FS', title: 'Full Superv.', sub: 'CSM / TSM / RSM', tone: 'success' }),
+              nodeBox({ id: 'RV', x: 1180, y: 74, w: 162, h: 96, code: 'RV', title: 'Reversing', sub: 'ถอยหลังฉุกเฉิน', tone: 'warning', dashed: true }),
+              nodeBox({ id: 'UN', x: 560, y: 278, w: 172, h: 96, code: 'UN', title: 'Unfitted (L0)', sub: 'คุม ≤ 120 km/h', tone: 'primary' }),
+              nodeBox({ id: 'OS', x: 868, y: 278, w: 188, h: 96, code: 'OS', title: 'On Sight', sub: 'Call-On ≤ 25 km/h', tone: 'warning' }),
+              nodeBox({ id: 'SH', x: 1180, y: 278, w: 162, h: 96, code: 'SH', title: 'Shunting', sub: 'สับเปลี่ยน ≤ 25', tone: 'warning' }),
+              // Zone 4: Emergency / Fault
+              nodeBox({ id: 'TR', x: 48, y: 516, w: 208, h: 96, code: 'TR', title: 'Trip Mode', sub: 'EB ค้าง (จอด + Ack)', tone: 'error' }),
+              nodeBox({ id: 'PT', x: 396, y: 516, w: 208, h: 96, code: 'PT', title: 'Post Trip (L1)', sub: 'ถอยหลังได้ ≤ 2 m', tone: 'error' }),
+              nodeBox({ id: 'SF', x: 746, y: 516, w: 208, h: 96, code: 'SF', title: 'System Failure', sub: 'EB ถาวร (ขัดข้อง)', tone: 'error' }),
+              nodeBox({ id: 'IS', x: 1092, y: 516, w: 212, h: 96, code: 'IS', title: 'Isolation Mode', sub: 'ตัดระบบ (พขร. 100%)', tone: 'error', dashed: true })
             ].join('');
 
             return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-0"><title id="svg-title-0">ภาพรวมเวิร์กโฟลว์โหมดการทำงาน ETCS</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
@@ -1310,30 +1377,30 @@
           params: ['QSY EB Reset: ~80 s', 'Brake Test: EB x2 (Reset < 1 min)', 'D_NVROLL = 2 m', 'V_NVSTFF = 25 km/h'],
           defaultNode: 'SOM_STEPS',
           renderSvg: () => {
-            const vb = '0 0 960 410';
+            const vb = '0 0 1380 490';
             const zones = [
-              zoneBox(24, 24, 520, 174, 'ขั้นตอนเตรียมระบบบนรถจักร (Standstill v = 0)', 'neutral'),
-              zoneBox(568, 24, 368, 174, 'เส้นทาง ETCS Level 1 (ST6)', 'success'),
-              zoneBox(568, 224, 368, 152, 'เส้นทาง ETCS Level 0 (นอกเขต ETCS)', 'primary')
+              zoneBox(20, 20, 732, 200, 'ขั้นตอนเตรียมระบบบนรถจักร (Standstill v = 0)', 'neutral'),
+              zoneBox(824, 20, 528, 200, 'เส้นทาง ETCS Level 1 (ST6)', 'success'),
+              zoneBox(824, 260, 528, 206, 'เส้นทาง ETCS Level 0 (นอกเขต ETCS)', 'primary')
             ].join('');
 
             const edges = [
-              edgePath({ d: 'M 152 106 L 204 106', label: '[4] จ่ายไฟ', lx: 178, ly: 82, lw: 72, tone: 'primary' }),
-              edgePath({ d: 'M 332 106 L 380 106', label: 'Cab Active', lx: 356, ly: 82, lw: 76, tone: 'primary' }),
-              edgePath({ d: 'M 528 106 L 590 106', label: '[8] Start + Ack', lx: 559, ly: 82, lw: 96, tone: 'primary' }),
-              edgePath({ d: 'M 730 106 L 784 106', label: '[32] MA+SSP', lx: 757, ly: 82, lw: 84, tone: 'success' }),
-              edgePath({ d: 'M 454 148 L 454 296 Q 454 304 462 304 L 590 304', label: '[60] เลือก L0 + Start + Ack', lx: 518, ly: 266, lw: 148, tone: 'primary' }),
-              edgePath({ d: 'M 268 148 L 268 296 Q 268 304 260 304 L 194 304', label: '[5] เลือกสับเปลี่ยน', lx: 230, ly: 236, lw: 108, tone: 'warning', dashed: true })
+              edgePath({ d: 'M 192 124 L 298 124', label: ['[4]', 'จ่ายไฟ'], lx: 246, ly: 124, lw: 68, tone: 'primary' }),
+              edgePath({ d: 'M 460 124 L 566 124', label: 'Cab Active', lx: 514, ly: 124, lw: 84, tone: 'primary' }),
+              edgePath({ d: 'M 732 124 L 846 124', label: ['[8] กด Start', '+ Ack'], lx: 790, ly: 124, lw: 88, tone: 'primary' }),
+              edgePath({ d: 'M 1024 124 L 1138 124', label: ['[32] รับ MA', '+ SSP'], lx: 1082, ly: 124, lw: 86, tone: 'success' }),
+              edgePath({ d: 'M 650 172 L 650 364 Q 650 372 658 372 L 846 372', label: ['[60] เลือก Level 0', 'Start + Ack'], lx: 650, ly: 292, lw: 122, tone: 'primary' }),
+              edgePath({ d: 'M 380 172 L 380 322', label: ['[5] เลือกสับเปลี่ยน', '(ไม่ต้องมี Train Data)'], lx: 380, ly: 252, lw: 148, tone: 'warning', dashed: true })
             ].join('');
 
             const nodes = [
-              nodeBox({ id: 'NP', x: 36, y: 66, w: 116, h: 80, code: 'NP', title: 'No Power', sub: 'On ATPB → EB 80s', tone: 'error' }),
-              nodeBox({ id: 'SB', x: 204, y: 66, w: 128, h: 80, code: 'SB', title: 'Stand By', sub: 'ห้ามไหล ≤ 2 m', tone: 'neutral' }),
-              nodeBox({ id: 'SOM_STEPS', x: 380, y: 62, w: 148, h: 86, code: 'SOM', title: 'ป้อนข้อมูล & Test', sub: 'ID / Test x2 / Data', tone: 'neutral' }),
-              nodeBox({ id: 'SR', x: 590, y: 66, w: 140, h: 80, code: 'SR', title: 'Staff Resp.', sub: 'กดค้าง 3s • ≤25', tone: 'primary' }),
-              nodeBox({ id: 'FS', x: 784, y: 66, w: 136, h: 80, code: 'FS', title: 'Full Superv.', sub: 'ได้ MA+SSP+Grad', tone: 'success' }),
-              nodeBox({ id: 'UN', x: 590, y: 264, w: 196, h: 80, code: 'UN', title: 'Unfitted (Level 0)', sub: 'คุม ≤ 120 km/h • ดูเสาเอง', tone: 'primary' }),
-              nodeBox({ id: 'SH', x: 48, y: 264, w: 146, h: 80, code: 'SH', title: 'Shunting', sub: 'ไม่ต้องป้อน Train Data', tone: 'warning', dashed: true })
+              nodeBox({ id: 'NP', x: 36, y: 76, w: 156, h: 96, code: 'NP', title: 'No Power', sub: 'On ATPB → EB ~80 s', tone: 'error' }),
+              nodeBox({ id: 'SB', x: 300, y: 76, w: 160, h: 96, code: 'SB', title: 'Stand By', sub: 'ห้ามไหล ≤ 2 m', tone: 'neutral' }),
+              nodeBox({ id: 'SOM_STEPS', x: 568, y: 76, w: 164, h: 96, code: 'SOM', title: 'ป้อนข้อมูล & Test', sub: 'ID / Test x2 / Data', tone: 'neutral' }),
+              nodeBox({ id: 'SR', x: 848, y: 76, w: 176, h: 96, code: 'SR', title: 'Staff Resp.', sub: 'กดค้าง 3 s • ≤ 25', tone: 'primary' }),
+              nodeBox({ id: 'FS', x: 1140, y: 76, w: 184, h: 96, code: 'FS', title: 'Full Superv.', sub: 'ได้ MA + SSP + Grad', tone: 'success' }),
+              nodeBox({ id: 'UN', x: 848, y: 324, w: 264, h: 96, code: 'UN', title: 'Unfitted (Level 0)', sub: 'คุม ≤ 120 km/h • ดูเสาเอง', tone: 'primary' }),
+              nodeBox({ id: 'SH', x: 272, y: 324, w: 216, h: 96, code: 'SH', title: 'Shunting Mode', sub: 'สับเปลี่ยน ≤ 25 km/h', tone: 'warning', dashed: true })
             ].join('');
 
             return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-1"><title id="svg-title-1">เวิร์กโฟลว์ Start of Mission</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
@@ -1348,27 +1415,27 @@
           params: ['T_AMT = 5 s (Ack)', 'OS Limit = 25 km/h', 'Exit L1 Alert ~400 m', 'RS = 25 km/h'],
           defaultNode: 'FS',
           renderSvg: () => {
-            const vb = '0 0 960 420';
+            const vb = '0 0 1320 520';
             const zones = [
-              zoneBox(24, 24, 244, 368, 'เขต Level 0 (นอก ETCS)', 'primary'),
-              zoneBox(292, 24, 644, 368, 'เขต ETCS Level 1 (ST6)', 'success')
+              zoneBox(20, 20, 292, 476, 'เขต Level 0 (นอก ETCS)', 'primary'),
+              zoneBox(344, 20, 956, 476, 'เขต ETCS Level 1 (ST6)', 'success')
             ].join('');
 
             const edges = [
-              edgePath({ d: 'M 232 106 L 316 106', label: 'เข้าป้าย Entry', lx: 274, ly: 82, lw: 92, tone: 'primary' }),
-              edgePath({ d: 'M 468 106 L 548 106', label: '[25] อัตโนมัติ', lx: 508, ly: 82, lw: 86, tone: 'success' }),
-              edgePath({ d: 'M 604 148 L 604 252', label: '[15/40] Call-On + Ack 5s', lx: 540, ly: 202, lw: 148, tone: 'warning' }),
-              edgePath({ d: 'M 676 252 L 676 148', label: '[32] พ้น OS + ได้ MA', lx: 748, ly: 202, lw: 128, tone: 'success' }),
-              edgePath({ d: 'M 642 148 L 642 184 Q 642 192 650 192 L 828 192 Q 836 192 836 200 L 836 252', label: 'แจ้งล่วงหน้า ~400m', lx: 768, ly: 170, lw: 124, tone: 'warning' }),
-              edgePath({ d: 'M 836 334 L 836 356 Q 836 364 828 364 L 148 364 Q 140 364 140 356 L 140 150', label: '[21] Ack ≤ 5s (ไม่กด→SB) → ล้าง MA เข้า L0', lx: 486, ly: 364, lw: 244, tone: 'warning', dashed: true })
+              edgePath({ d: 'M 284 124 L 402 124', label: ['เข้าป้าย', 'Entry'], lx: 343, ly: 124, lw: 78, tone: 'primary' }),
+              edgePath({ d: 'M 616 124 L 746 124', label: ['[25] เปลี่ยน', 'อัตโนมัติ'], lx: 681, ly: 124, lw: 92, tone: 'success' }),
+              edgePath({ d: 'M 800 172 L 800 302', label: ['[15/40] Call-On', 'กด Ack ≤ 5 s'], lx: 748, ly: 237, lw: 118, tone: 'warning' }),
+              edgePath({ d: 'M 920 304 L 920 174', label: ['[32] พ้นเขต OS', 'ได้ MA ปกติ'], lx: 966, ly: 237, lw: 108, tone: 'success' }),
+              edgePath({ d: 'M 976 124 L 1168 124 Q 1176 124 1176 132 L 1176 302', label: ['แจ้งล่วงหน้า', '~400 m'], lx: 1176, ly: 218, lw: 104, tone: 'warning' }),
+              edgePath({ d: 'M 1176 400 L 1176 446 Q 1176 454 1168 454 L 172 454 Q 164 454 164 446 L 164 174', label: '[21] กด Ack ≤ 5 s (ไม่กด → SB) • ล้าง MA เข้า L0', lx: 660, ly: 454, lw: 318, tone: 'warning', dashed: true })
             ].join('');
 
             const nodes = [
-              nodeBox({ id: 'UN', x: 52, y: 66, w: 180, h: 80, code: 'UN', title: 'Unfitted (L0)', sub: '≤ 120 km/h • ดูเสาเอง', tone: 'primary' }),
-              nodeBox({ id: 'L0_TO_L1', x: 316, y: 66, w: 152, h: 80, code: 'L0→L1', title: 'Entry to ETCS', sub: 'Balise แจ้งล่วงหน้า+NV', tone: 'primary' }),
-              nodeBox({ id: 'FS', x: 548, y: 64, w: 188, h: 84, code: 'FS', title: 'Full Supervision', sub: 'CSM/TSM/RSM • ID 273', tone: 'success' }),
-              nodeBox({ id: 'OS', x: 548, y: 254, w: 188, h: 80, code: 'OS', title: 'On Sight (Call-On)', sub: '≤ 25 km/h • พขร.มองทาง', tone: 'warning' }),
-              nodeBox({ id: 'L1_TO_L0', x: 756, y: 254, w: 160, h: 80, code: 'L1→L0', title: 'Exit from ETCS', sub: 'ต้องกด Ack ≤ 5 วินาที', tone: 'warning' })
+              nodeBox({ id: 'UN', x: 44, y: 76, w: 240, h: 96, code: 'UN', title: 'Unfitted (Level 0)', sub: '≤ 120 km/h • ดูเสาข้างทางเอง', tone: 'primary' }),
+              nodeBox({ id: 'L0_TO_L1', x: 404, y: 76, w: 212, h: 96, code: 'L0→L1', title: 'Entry to ETCS', sub: 'Balise แจ้งล่วงหน้า + NV', tone: 'primary' }),
+              nodeBox({ id: 'FS', x: 748, y: 76, w: 228, h: 96, code: 'FS', title: 'Full Supervision', sub: 'CSM / TSM / RSM • ID 273', tone: 'success' }),
+              nodeBox({ id: 'OS', x: 748, y: 304, w: 228, h: 96, code: 'OS', title: 'On Sight (Call-On)', sub: '≤ 25 km/h • พขร. มองทาง', tone: 'warning' }),
+              nodeBox({ id: 'L1_TO_L0', x: 1072, y: 304, w: 208, h: 96, code: 'L1→L0', title: 'Exit from ETCS', sub: 'ต้องกด Ack ≤ 5 วินาที', tone: 'warning' })
             ].join('');
 
             return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-2"><title id="svg-title-2">เวิร์กโฟลว์เดินรถปกติและเปลี่ยนระดับ</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
@@ -1383,28 +1450,28 @@
           params: ['V_NVALLOWOVTRP = 0 km/h', 'D_NVOVTRP = 50 m', 'T_NVOVTRP = 180 s', 'V_NVSUPOVTRP = 25 km/h'],
           defaultNode: 'SR_OV',
           renderSvg: () => {
-            const vb = '0 0 960 400';
+            const vb = '0 0 1320 500';
             const zones = [
-              zoneBox(24, 24, 912, 188, 'เส้นทางปฏิบัติการถูกต้อง (Correct Override Path)', 'warning'),
-              zoneBox(24, 232, 912, 144, 'เส้นทางเกิดความผิดพลาด / เลยขีดจำกัด (Trip Path)', 'error')
+              zoneBox(20, 20, 1280, 208, 'เส้นทางปฏิบัติการถูกต้อง (Correct Override Path)', 'warning'),
+              zoneBox(20, 272, 1280, 206, 'เส้นทางเกิดความผิดพลาด / เลยขีดจำกัด (Trip Path)', 'error')
             ].join('');
 
             const edges = [
-              edgePath({ d: 'M 196 110 L 252 110', label: 'ถึงเสาแดง', lx: 224, ly: 84, lw: 72, tone: 'primary' }),
-              edgePath({ d: 'M 424 110 L 496 110', label: '[37] ใช่ + Ack 300', lx: 460, ly: 84, lw: 112, tone: 'warning' }),
-              edgePath({ d: 'M 684 110 L 752 110', label: '[32] รับ MA ถัดไป', lx: 718, ly: 84, lw: 108, tone: 'success' }),
-              edgePath({ d: 'M 338 152 L 338 264', label: '[12/18] ไม่กด/ไม่จอด→ฝ่า', lx: 256, ly: 214, lw: 138, tone: 'error' }),
-              edgePath({ d: 'M 590 152 L 590 280 Q 590 288 582 288 L 446 288', label: '[43] เกิน 50 m / 180 s', lx: 530, ly: 256, lw: 132, tone: 'error', dashed: true }),
-              edgePath({ d: 'M 444 324 L 750 324', label: '[7] จอดสนิท + Ack 265', lx: 600, ly: 348, lw: 138, tone: 'warning', dashed: true })
+              edgePath({ d: 'M 224 124 L 346 124', label: 'ถึงหน้าเสาแดง', lx: 285, ly: 124, lw: 98, tone: 'primary' }),
+              edgePath({ d: 'M 560 124 L 690 124', label: ['[37] ใช่', '+ Ack ID 300'], lx: 625, ly: 124, lw: 100, tone: 'warning' }),
+              edgePath({ d: 'M 912 124 L 1042 124', label: ['[32] รับ MA', 'จาก Balise ถัดไป'], lx: 977, ly: 124, lw: 108, tone: 'success' }),
+              edgePath({ d: 'M 454 172 L 454 328', label: ['[12/18] ไม่กด/ไม่จอด', 'เคลื่อนรถฝ่า EOA'], lx: 454, ly: 248, lw: 140, tone: 'error' }),
+              edgePath({ d: 'M 802 172 L 802 346 Q 802 354 794 354 L 572 354', label: ['[43] เลยหน้าต่าง', '50 m / 180 s'], lx: 802, ly: 248, lw: 112, tone: 'error', dashed: true }),
+              edgePath({ d: 'M 570 398 L 1042 398', label: '[7] จอดสนิท (v = 0) + กด Ack ID 265', lx: 806, ly: 398, lw: 236, tone: 'warning', dashed: true })
             ].join('');
 
             const nodes = [
-              nodeBox({ id: 'FS', x: 40, y: 70, w: 156, h: 80, code: 'FS / OS', title: 'ถึงหน้าเสาแดง', sub: 'EOA = 0 m', tone: 'primary' }),
-              nodeBox({ id: 'OV_DECISION', x: 252, y: 68, w: 172, h: 84, code: 'CHECK', title: 'จอด 0 กม./ชม.?', sub: 'กด Override EOA', tone: 'warning' }),
-              nodeBox({ id: 'SR_OV', x: 496, y: 66, w: 188, h: 86, code: 'SR+OV', title: 'Override Active', sub: '≤25 • ยับยั้ง 50m/180s', tone: 'warning' }),
-              nodeBox({ id: 'FS', x: 752, y: 70, w: 164, h: 80, code: 'FS', title: 'Full Supervision', sub: 'พ้นเสาแดงรับ MA ใหม่', tone: 'success' }),
-              nodeBox({ id: 'TR', x: 252, y: 266, w: 192, h: 80, code: 'TR', title: 'Trip Mode', sub: 'EB ค้างทันที', tone: 'error' }),
-              nodeBox({ id: 'PT', x: 752, y: 266, w: 164, h: 80, code: 'PT', title: 'Post Trip (L1)', sub: 'ถอย ≤ 2 m • Start→SR', tone: 'error', dashed: true })
+              nodeBox({ id: 'FS', x: 40, y: 76, w: 184, h: 96, code: 'FS / OS', title: 'ถึงหน้าเสาแดง', sub: 'EOA = 0 m', tone: 'primary' }),
+              nodeBox({ id: 'OV_DECISION', x: 348, y: 76, w: 212, h: 96, code: 'CHECK', title: 'จอด 0 กม./ชม.?', sub: 'กด Override EOA', tone: 'warning' }),
+              nodeBox({ id: 'SR_OV', x: 692, y: 76, w: 220, h: 96, code: 'SR+OV', title: 'Override Active', sub: '≤ 25 • ยับยั้ง 50 m / 180 s', tone: 'warning' }),
+              nodeBox({ id: 'FS', x: 1044, y: 76, w: 224, h: 96, code: 'FS', title: 'Full Supervision', sub: 'พ้นเสาแดงรับ MA ใหม่', tone: 'success' }),
+              nodeBox({ id: 'TR', x: 338, y: 330, w: 232, h: 96, code: 'TR', title: 'Trip Mode', sub: 'สั่ง EB ค้างทันที', tone: 'error' }),
+              nodeBox({ id: 'PT', x: 1044, y: 330, w: 224, h: 96, code: 'PT', title: 'Post Trip (L1)', sub: 'ถอย ≤ 2 m • Start → SR', tone: 'error', dashed: true })
             ].join('');
 
             return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-3"><title id="svg-title-3">เวิร์กโฟลว์ Override EOA</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
@@ -1419,34 +1486,34 @@
           params: ['TR: EB ค้างปลดไม่ได้', 'PT ถอยได้ ≤ D_NVPOTRP = 2 m', 'PT เดินหน้า = EB', 'Ack ID 265'],
           defaultNode: 'PT',
           renderSvg: () => {
-            const vb = '0 0 960 430';
+            const vb = '0 0 1340 560';
             const zones = [
-              zoneBox(24, 24, 520, 178, 'ระยะเกิดเหตุและบังคับหยุด (All Levels)', 'error'),
-              zoneBox(568, 24, 368, 224, 'การกู้คืนใน Level 1 (ผ่าน Post Trip)', 'warning'),
-              zoneBox(568, 266, 368, 134, 'การกู้คืนใน Level 0 (ไม่ออก PT)', 'primary')
+              zoneBox(20, 20, 740, 212, 'ระยะเกิดเหตุและบังคับหยุด (All Levels)', 'error'),
+              zoneBox(788, 20, 532, 276, 'การกู้คืนใน Level 1 (ผ่าน Post Trip)', 'warning'),
+              zoneBox(788, 324, 532, 216, 'การกู้คืนใน Level 0 (ไม่ผ่าน PT)', 'primary')
             ].join('');
 
             const edges = [
-              edgePath({ d: 'M 184 106 L 228 106', label: 'สั่ง Trip', lx: 206, ly: 82, lw: 62, tone: 'error' }),
-              edgePath({ d: 'M 372 106 L 414 106', label: 'v = 0', lx: 393, ly: 82, lw: 48, tone: 'warning' }),
-              edgePath({ d: 'M 542 106 L 592 106', label: '[7] L1', lx: 567, ly: 82, lw: 48, tone: 'error' }),
-              edgePath({ d: 'M 738 86 L 792 86', label: '[8] Start', lx: 765, ly: 62, lw: 64, tone: 'primary' }),
-              edgePath({ d: 'M 738 134 L 764 134 Q 772 134 772 142 L 772 184 Q 772 192 780 192 L 792 192', label: '[5] SH', lx: 765, ly: 164, lw: 52, tone: 'warning', dashed: true }),
-              edgePath({ d: 'M 665 152 L 665 218 L 480 218 L 480 280', label: '[28] ปิดห้องขับ', lx: 572, ly: 218, lw: 92, tone: 'muted', dashed: true }),
-              edgePath({ d: 'M 478 148 L 478 196 Q 478 204 486 204 L 548 204 Q 556 204 556 212 L 556 314 Q 556 322 564 322 L 592 322', label: '[62] L0 มี Data', lx: 530, ly: 248, lw: 102, tone: 'primary' }),
-              edgePath({ d: 'M 556 322 L 556 362 Q 556 370 564 370 L 792 370', label: '[68] ไม่มี Data', lx: 672, ly: 370, lw: 92, tone: 'warning', dashed: true })
+              edgePath({ d: 'M 220 124 L 316 124', label: 'สั่ง Trip', lx: 268, ly: 124, lw: 68, tone: 'error' }),
+              edgePath({ d: 'M 496 124 L 586 124', label: 'v = 0', lx: 541, ly: 124, lw: 56, tone: 'warning' }),
+              edgePath({ d: 'M 744 124 L 814 124', label: '[7] L1', lx: 779, ly: 124, lw: 52, tone: 'error' }),
+              edgePath({ d: 'M 1012 104 L 1110 104', label: '[8] Start', lx: 1061, ly: 104, lw: 72, tone: 'primary' }),
+              edgePath({ d: 'M 1012 150 L 1052 150 Q 1060 150 1060 158 L 1060 220 Q 1060 228 1068 228 L 1110 228', label: '[5] SH', lx: 1060, ly: 190, lw: 64, tone: 'warning', dashed: true }),
+              edgePath({ d: 'M 914 174 L 914 298 Q 914 306 906 306 L 414 306 Q 406 306 406 314 L 406 376', label: '[28] ปิดห้องขับ → SB', lx: 540, ly: 306, lw: 144, tone: 'muted', dashed: true }),
+              edgePath({ d: 'M 666 174 L 666 420 Q 666 428 674 428 L 814 428', label: ['[62] Level 0', 'มี Train Data'], lx: 666, ly: 356, lw: 106, tone: 'primary' }),
+              edgePath({ d: 'M 730 428 L 730 492 Q 730 500 738 500 L 1200 500 Q 1208 500 1208 492 L 1208 470', label: '[68] ไม่มี Train Data', lx: 960, ly: 500, lw: 136, tone: 'warning', dashed: true })
             ].join('');
 
             const nodes = [
-              nodeBox({ id: 'TRIP_CAUSE', x: 36, y: 66, w: 148, h: 80, code: 'TRIGGER', title: 'สาเหตุ Trip', sub: 'EOA / Balise / Stop', tone: 'error' }),
-              nodeBox({ id: 'TR', x: 228, y: 66, w: 144, h: 80, code: 'TR', title: 'Trip Mode', sub: 'EB ค้าง ปลดไม่ได้', tone: 'error' }),
-              nodeBox({ id: 'TR_ACK', x: 414, y: 66, w: 128, h: 80, code: 'ACK', title: 'จอด + กด Ack', sub: 'ID 265', tone: 'warning' }),
-              nodeBox({ id: 'PT', x: 592, y: 66, w: 146, h: 86, code: 'PT', title: 'Post Trip', sub: 'ถอย ≤2m • ห้ามหน้า', tone: 'error' }),
-              nodeBox({ id: 'SR', x: 792, y: 50, w: 128, h: 72, code: 'SR', title: 'Staff Resp.', sub: '≤ 25 km/h', tone: 'primary' }),
-              nodeBox({ id: 'SH', x: 792, y: 156, w: 128, h: 72, code: 'SH', title: 'Shunting', sub: '≤ 25 km/h', tone: 'warning' }),
-              nodeBox({ id: 'SB', x: 398, y: 282, w: 132, h: 74, code: 'SB', title: 'Stand By', sub: 'ปิดห้องขับ [28]', tone: 'neutral', dashed: true }),
-              nodeBox({ id: 'UN', x: 592, y: 286, w: 150, h: 68, code: 'UN', title: 'Unfitted (L0)', sub: 'มี Train Data', tone: 'primary' }),
-              nodeBox({ id: 'SH', x: 792, y: 316, w: 128, h: 68, code: 'SH', title: 'Shunting (L0)', sub: 'ไม่มี Train Data', tone: 'warning', dashed: true })
+              nodeBox({ id: 'TRIP_CAUSE', x: 36, y: 76, w: 184, h: 96, code: 'TRIGGER', title: 'สาเหตุ Trip', sub: 'EOA / Balise / Stop', tone: 'error' }),
+              nodeBox({ id: 'TR', x: 318, y: 76, w: 178, h: 96, code: 'TR', title: 'Trip Mode', sub: 'EB ค้าง ปลดไม่ได้', tone: 'error' }),
+              nodeBox({ id: 'TR_ACK', x: 588, y: 76, w: 156, h: 96, code: 'ACK', title: 'จอด + กด Ack', sub: 'ID 265', tone: 'warning' }),
+              nodeBox({ id: 'PT', x: 816, y: 76, w: 196, h: 96, code: 'PT', title: 'Post Trip', sub: 'ถอย ≤ 2 m • ห้ามหน้า', tone: 'error' }),
+              nodeBox({ id: 'SR', x: 1112, y: 60, w: 192, h: 90, code: 'SR', title: 'Staff Resp.', sub: '≤ 25 km/h', tone: 'primary' }),
+              nodeBox({ id: 'SH', x: 1112, y: 182, w: 192, h: 90, code: 'SH', title: 'Shunting', sub: '≤ 25 km/h', tone: 'warning' }),
+              nodeBox({ id: 'SB', x: 314, y: 378, w: 184, h: 96, code: 'SB', title: 'Stand By', sub: 'ปิดห้องขับ [28]', tone: 'neutral', dashed: true }),
+              nodeBox({ id: 'UN', x: 816, y: 372, w: 204, h: 96, code: 'UN', title: 'Unfitted (L0)', sub: 'มี Train Data', tone: 'primary' }),
+              nodeBox({ id: 'SH', x: 1112, y: 372, w: 192, h: 96, code: 'SH', title: 'Shunting (L0)', sub: 'ไม่มี Train Data', tone: 'warning', dashed: true })
             ].join('');
 
             return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-4"><title id="svg-title-4">เวิร์กโฟลว์ Trip และการกู้คืน</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
@@ -1461,32 +1528,32 @@
           params: ['V_NVSHUNT = 25 km/h', 'ST6: ทางไม่สั่ง SH อัตโนมัติ', 'RV: เกินระยะ/SBI → EB', 'Ack RV ID 261'],
           defaultNode: 'SH',
           renderSvg: () => {
-            const vb = '0 0 960 420';
+            const vb = '0 0 1320 530';
             const zones = [
-              zoneBox(24, 24, 912, 184, 'A. โหมดสับเปลี่ยน — Shunting (SH) ในย่าน / สถานี', 'warning'),
-              zoneBox(24, 224, 912, 172, 'B. โหมดถอยหลังฉุกเฉิน — Reversing (RV) จากห้องขับเดิม (อุโมงค์ / สะพานยาว)', 'primary')
+              zoneBox(20, 20, 1280, 250, 'A. โหมดสับเปลี่ยน — Shunting (SH) ในย่าน / สถานี', 'warning'),
+              zoneBox(20, 294, 1280, 212, 'B. โหมดถอยหลังฉุกเฉิน — Reversing (RV) จากห้องขับเดิม (อุโมงค์ / สะพานยาว)', 'primary')
             ].join('');
 
             const edges = [
-              edgePath({ d: 'M 204 114 L 284 114', label: '[5] จอด + เลือก SH', lx: 244, ly: 88, lw: 112, tone: 'warning' }),
-              edgePath({ d: 'M 476 92 L 560 92', label: '[19] จอด + Exit SH', lx: 518, ly: 66, lw: 112, tone: 'primary' }),
-              edgePath({ d: 'M 716 92 L 774 92', label: '[8] SOM→SR', lx: 745, ly: 66, lw: 82, tone: 'primary' }),
-              edgePath({ d: 'M 380 156 L 380 184 L 560 184', label: '[49] ฝ่า Stop if in SH', lx: 472, ly: 184, lw: 132, tone: 'error', dashed: true }),
-              edgePath({ d: 'M 204 310 L 284 310', label: 'พบรหัสอนุญาต RV', lx: 244, ly: 284, lw: 116, tone: 'primary' }),
-              edgePath({ d: 'M 476 310 L 560 310', label: '[59] จอด+คันถอย+Ack', lx: 518, ly: 284, lw: 126, tone: 'warning' }),
-              edgePath({ d: 'M 748 310 L 798 310', label: '[28] ปิดห้องขับ', lx: 773, ly: 284, lw: 90, tone: 'muted' })
+              edgePath({ d: 'M 232 118 L 358 118', label: ['[5] จอดสนิท', '+ เลือก SH'], lx: 295, ly: 118, lw: 98, tone: 'warning' }),
+              edgePath({ d: 'M 580 118 L 718 118', label: ['[19] จอดสนิท', '+ Exit SH'], lx: 649, ly: 118, lw: 106, tone: 'primary' }),
+              edgePath({ d: 'M 916 118 L 1034 118', label: ['[8] SOM', 'เข้า SR'], lx: 975, ly: 118, lw: 84, tone: 'primary' }),
+              edgePath({ d: 'M 470 166 L 470 218 Q 470 226 478 226 L 718 226', label: '[49] ฝ่า Stop if in SH', lx: 586, ly: 226, lw: 146, tone: 'error', dashed: true }),
+              edgePath({ d: 'M 232 396 L 358 396', label: ['พบรหัสอนุญาต', 'Reversing'], lx: 295, ly: 396, lw: 104, tone: 'primary' }),
+              edgePath({ d: 'M 580 396 L 718 396', label: ['[59] จอด + คันถอย', '+ กด Ack'], lx: 649, ly: 396, lw: 118, tone: 'warning' }),
+              edgePath({ d: 'M 944 396 L 1068 396', label: ['[28] ปิด', 'ห้องขับ'], lx: 1006, ly: 396, lw: 84, tone: 'muted' })
             ].join('');
 
             const nodes = [
-              nodeBox({ id: 'SB', x: 40, y: 74, w: 164, h: 80, code: 'SB / FS / SR', title: 'โหมดก่อนสับเปลี่ยน', sub: 'รถต้องจอดสนิท (v = 0)', tone: 'neutral' }),
-              nodeBox({ id: 'SH', x: 284, y: 72, w: 192, h: 84, code: 'SH', title: 'Shunting Mode', sub: '≤25 • ถอยได้ • งด Trans.', tone: 'warning' }),
-              nodeBox({ id: 'SB', x: 560, y: 54, w: 156, h: 74, code: 'SB', title: 'Stand By', sub: 'จบการสับเปลี่ยน', tone: 'neutral' }),
-              nodeBox({ id: 'SR', x: 774, y: 54, w: 144, h: 74, code: 'SR', title: 'เข้า SR ออกย่าน', sub: 'ก่อนเสา ETCS ต้นแรก', tone: 'primary' }),
-              nodeBox({ id: 'TR', x: 560, y: 146, w: 198, h: 52, code: 'TR', title: 'Trip (EB ค้าง)', sub: '', tone: 'error', dashed: true }),
-              nodeBox({ id: 'FS', x: 40, y: 270, w: 164, h: 80, code: 'FS / OS', title: 'เดินรถในเขต L1', sub: 'เข้าเขตอุโมงค์/สะพาน', tone: 'success' }),
-              nodeBox({ id: 'RV_AREA', x: 284, y: 270, w: 192, h: 80, code: 'AREA', title: 'REVERSING POSSIBLE', sub: 'ข้อความ DMI (ID 285)', tone: 'primary' }),
-              nodeBox({ id: 'RV', x: 560, y: 268, w: 188, h: 84, code: 'RV', title: 'Reversing Mode', sub: 'คุมระยะถอย • เกิน→EB', tone: 'warning' }),
-              nodeBox({ id: 'SB', x: 798, y: 270, w: 120, h: 80, code: 'SB', title: 'Stand By', sub: 'เริ่ม SOM ใหม่', tone: 'neutral' })
+              nodeBox({ id: 'SB', x: 40, y: 70, w: 192, h: 96, code: 'SB / FS / SR', title: 'โหมดก่อนสับเปลี่ยน', sub: 'รถต้องจอดสนิท (v = 0)', tone: 'neutral' }),
+              nodeBox({ id: 'SH', x: 360, y: 70, w: 220, h: 96, code: 'SH', title: 'Shunting Mode', sub: '≤ 25 • ถอยได้ • งด Trans.', tone: 'warning' }),
+              nodeBox({ id: 'SB', x: 720, y: 70, w: 196, h: 96, code: 'SB', title: 'Stand By', sub: 'จบการสับเปลี่ยน', tone: 'neutral' }),
+              nodeBox({ id: 'SR', x: 1036, y: 70, w: 244, h: 96, code: 'SR', title: 'เข้า SR ออกย่าน', sub: 'ก่อนเสา ETCS ต้นแรก (ST6)', tone: 'primary' }),
+              nodeBox({ id: 'TR', x: 720, y: 196, w: 260, h: 60, code: 'TR', title: 'Trip Mode (EB ค้าง)', sub: '', tone: 'error', dashed: true }),
+              nodeBox({ id: 'FS', x: 40, y: 348, w: 192, h: 96, code: 'FS / OS', title: 'เดินรถในเขต L1', sub: 'เข้าเขตอุโมงค์ / สะพาน', tone: 'success' }),
+              nodeBox({ id: 'RV_AREA', x: 360, y: 348, w: 220, h: 96, code: 'AREA', title: 'REVERSING POSSIBLE', sub: 'ข้อความ DMI (ID 285)', tone: 'primary' }),
+              nodeBox({ id: 'RV', x: 720, y: 348, w: 224, h: 96, code: 'RV', title: 'Reversing Mode', sub: 'คุมระยะถอย • เกิน → EB', tone: 'warning' }),
+              nodeBox({ id: 'SB', x: 1070, y: 348, w: 210, h: 96, code: 'SB', title: 'Stand By', sub: 'เริ่ม SOM ใหม่', tone: 'neutral' })
             ].join('');
 
             return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-5"><title id="svg-title-5">เวิร์กโฟลว์สับเปลี่ยนและถอยหลังฉุกเฉิน</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
@@ -1501,26 +1568,26 @@
           params: ['SL: อัตโนมัติ (MU)', 'NL: เลือกเอง + Ack 298', 'งดสั่ง SB จาก BG error', 'NL บันทึก JRU'],
           defaultNode: 'NL',
           renderSvg: () => {
-            const vb = '0 0 960 400';
+            const vb = '0 0 1320 480';
             const zones = [
-              zoneBox(24, 24, 912, 168, 'A. พ่วง Multiple Unit (MU) — ต่อสายควบคุมระยะไกลจากหัวรถจักรนำ', 'neutral'),
-              zoneBox(24, 210, 912, 168, 'B. พ่วง Tandem — ไม่ต่อสายควบคุม มี พขร. ประจำหัวรถจักรตัวรอง', 'primary')
+              zoneBox(20, 20, 1280, 204, 'A. พ่วง Multiple Unit (MU) — ต่อสายควบคุมระยะไกลจากหัวรถจักรนำ', 'neutral'),
+              zoneBox(20, 252, 1280, 204, 'B. พ่วง Tandem — ไม่ต่อสายควบคุม มี พขร. ประจำหัวรถจักรตัวรอง', 'primary')
             ].join('');
 
             const edges = [
-              edgePath({ d: 'M 224 108 L 352 108', label: '[14] ปิดทุกห้อง + SL Signal', lx: 288, ly: 82, lw: 144, tone: 'muted' }),
-              edgePath({ d: 'M 608 108 L 732 108', label: '[2/3] เปิดห้อง/สัญญาณหาย', lx: 670, ly: 82, lw: 140, tone: 'primary' }),
-              edgePath({ d: 'M 224 294 L 352 294', label: '[46] NL Signal + Ack 298', lx: 288, ly: 268, lw: 142, tone: 'primary' }),
-              edgePath({ d: 'M 608 294 L 732 294', label: '[47/28] Stop NL / ปิดห้อง', lx: 670, ly: 268, lw: 140, tone: 'muted' })
+              edgePath({ d: 'M 284 124 L 462 124', label: ['[14] ปิดทุกห้อง', '+ สัญญาณ SL'], lx: 373, ly: 124, lw: 118, tone: 'muted' }),
+              edgePath({ d: 'M 836 124 L 1018 124', label: ['[2/3] เปิดห้องขับ', 'หรือสัญญาณหาย'], lx: 927, ly: 124, lw: 126, tone: 'primary' }),
+              edgePath({ d: 'M 284 356 L 462 356', label: ['[46] สัญญาณ NL', '+ กด Ack ID 298'], lx: 373, ly: 356, lw: 124, tone: 'primary' }),
+              edgePath({ d: 'M 836 356 L 1018 356', label: ['[47/28] Stop NL', 'หรือปิดห้องขับ'], lx: 927, ly: 356, lw: 124, tone: 'muted' })
             ].join('');
 
             const nodes = [
-              nodeBox({ id: 'SB', x: 44, y: 68, w: 180, h: 80, code: 'SB', title: 'Stand By (ตัวรอง)', sub: 'รถจอดสนิท (v = 0)', tone: 'neutral' }),
-              nodeBox({ id: 'SL', x: 352, y: 66, w: 256, h: 84, code: 'SL', title: 'Sleeping Mode', sub: 'DMI ดับ • อ่าน Balise • งด SB error', tone: 'neutral' }),
-              nodeBox({ id: 'SB', x: 732, y: 68, w: 184, h: 80, code: 'SB', title: 'Stand By', sub: 'พร้อมทำ SOM ต่อ', tone: 'neutral' }),
-              nodeBox({ id: 'SB', x: 44, y: 254, w: 180, h: 80, code: 'SB / FS / SH', title: 'โหมดตั้งต้น (ตัวรอง)', sub: 'รถจอดสนิท (v = 0)', tone: 'primary' }),
-              nodeBox({ id: 'NL', x: 352, y: 252, w: 256, h: 84, code: 'NL', title: 'Non-Leading Mode', sub: 'ไม่คุ้มครอง • โชว์ V+Track Cond • JRU', tone: 'primary' }),
-              nodeBox({ id: 'SB', x: 732, y: 254, w: 184, h: 80, code: 'SB', title: 'Stand By', sub: 'เฉพาะเมื่อรถจอดสนิท', tone: 'neutral' })
+              nodeBox({ id: 'SB', x: 44, y: 76, w: 240, h: 96, code: 'SB', title: 'Stand By (ตัวรอง)', sub: 'รถจอดสนิท (v = 0)', tone: 'neutral' }),
+              nodeBox({ id: 'SL', x: 464, y: 76, w: 372, h: 96, code: 'SL', title: 'Sleeping Mode', sub: 'DMI ดับ • อ่าน Balise • งด SB จาก BG error', tone: 'neutral' }),
+              nodeBox({ id: 'SB', x: 1020, y: 76, w: 254, h: 96, code: 'SB', title: 'Stand By', sub: 'พร้อมทำ SOM ต่อ', tone: 'neutral' }),
+              nodeBox({ id: 'SB', x: 44, y: 308, w: 240, h: 96, code: 'SB / FS / SH', title: 'โหมดตั้งต้น (ตัวรอง)', sub: 'รถจอดสนิท (v = 0)', tone: 'primary' }),
+              nodeBox({ id: 'NL', x: 464, y: 308, w: 372, h: 96, code: 'NL', title: 'Non-Leading Mode', sub: 'ไม่คุ้มครอง • โชว์ V + Track Cond • ลง JRU', tone: 'primary' }),
+              nodeBox({ id: 'SB', x: 1020, y: 308, w: 254, h: 96, code: 'SB', title: 'Stand By', sub: 'เฉพาะเมื่อรถจอดสนิท', tone: 'neutral' })
             ].join('');
 
             return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-6"><title id="svg-title-6">เวิร์กโฟลว์รถพ่วง SL และ NL</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
@@ -1535,30 +1602,30 @@
           params: ['Priority: IS (-p1-) > NP (-p2-) > SF (-p3-)', 'IS: ไม่มี Transition ออกปกติ', 'QSY: Off ATPB → Un-isolate → On ATPB'],
           defaultNode: 'IS',
           renderSvg: () => {
-            const vb = '0 0 960 410';
+            const vb = '0 0 1320 500';
             const zones = [
-              zoneBox(24, 24, 912, 168, 'A. กรณีระบบขัดข้อง — System Failure (SF) Priority -p3-', 'error'),
-              zoneBox(24, 210, 912, 174, 'B. กรณีตัดแยกระบบ — Isolation (IS) Priority -p1- และขั้นตอนกู้คืนเฉพาะ', 'error')
+              zoneBox(20, 20, 1280, 206, 'A. กรณีระบบขัดข้อง — System Failure (SF) Priority -p3-', 'error'),
+              zoneBox(20, 268, 1280, 212, 'B. กรณีตัดแยกระบบ — Isolation (IS) Priority -p1- และขั้นตอนกู้คืนเฉพาะ', 'error')
             ].join('');
 
             const edges = [
-              edgePath({ d: 'M 212 108 L 308 108', label: '[13] Safety Fault', lx: 260, ly: 82, lw: 108, tone: 'error' }),
-              edgePath({ d: 'M 512 92 L 640 92', label: '[29] ปิดไฟรีเซ็ต', lx: 576, ly: 66, lw: 98, tone: 'primary' }),
-              edgePath({ d: 'M 410 150 L 410 218 L 352 218 L 352 254', label: '[1] จอด + บิด Isolation', lx: 460, ly: 202, lw: 130, tone: 'error', dashed: true }),
-              edgePath({ d: 'M 212 296 L 266 296', label: '[1] บิด Isolation', lx: 239, ly: 270, lw: 98, tone: 'error' }),
-              edgePath({ d: 'M 482 296 L 578 296', label: 'Off ATPB + คืนกุญแจ', lx: 530, ly: 270, lw: 122, tone: 'primary', dashed: true }),
-              edgePath({ d: 'M 728 296 L 788 296', label: '[4] On ATPB', lx: 758, ly: 270, lw: 78, tone: 'primary' }),
-              edgePath({ d: 'M 790 92 L 845 92 Q 853 92 853 100 L 853 254', label: '[4] เปิดไฟใหม่', lx: 853, ly: 172, lw: 88, tone: 'primary', dashed: true })
+              edgePath({ d: 'M 272 122 L 410 122', label: ['[13]', 'Safety Fault'], lx: 341, ly: 122, lw: 96, tone: 'error' }),
+              edgePath({ d: 'M 656 122 L 802 122', label: ['[29]', 'ปิดไฟรีเซ็ต'], lx: 729, ly: 122, lw: 96, tone: 'primary' }),
+              edgePath({ d: 'M 534 170 L 534 322', label: '[1] จอดสนิท + บิด Isolation', lx: 534, ly: 247, lw: 184, tone: 'error', dashed: true }),
+              edgePath({ d: 'M 272 372 L 410 372', label: ['[1] บิดกุญแจ', 'Isolation'], lx: 341, ly: 372, lw: 96, tone: 'error' }),
+              edgePath({ d: 'M 656 372 L 802 372', label: ['Off ATPB', '+ คืนกุญแจ'], lx: 729, ly: 372, lw: 96, tone: 'primary', dashed: true }),
+              edgePath({ d: 'M 1016 372 L 1118 372', label: ['[4]', 'On ATPB'], lx: 1067, ly: 372, lw: 78, tone: 'primary' }),
+              edgePath({ d: 'M 1016 122 L 1192 122 Q 1200 122 1200 130 L 1200 322', label: ['[4] เปิดไฟใหม่', '(เข้า SB)'], lx: 1200, ly: 247, lw: 106, tone: 'primary', dashed: true })
             ].join('');
 
             const nodes = [
-              nodeBox({ id: 'FS', x: 40, y: 68, w: 172, h: 80, code: 'ANY MODE', title: 'กำลังใช้งาน ETCS', sub: '(SL/NL จำ fault ไว้ก่อน)', tone: 'primary' }),
-              nodeBox({ id: 'SF', x: 308, y: 66, w: 204, h: 84, code: 'SF', title: 'System Failure', sub: 'EB ถาวร • ห้ามเดินรถต่อ', tone: 'error' }),
-              nodeBox({ id: 'NP', x: 640, y: 54, w: 150, h: 74, code: 'NP', title: 'No Power', sub: 'Off ATPB เพื่อรีเซ็ต', tone: 'neutral' }),
-              nodeBox({ id: 'TR', x: 40, y: 256, w: 172, h: 80, code: 'ALL MODES', title: 'ทุกโหมด (รวม SF/TR)', sub: 'สวิตช์มีซีล + ลง JRU', tone: 'neutral' }),
-              nodeBox({ id: 'IS', x: 266, y: 254, w: 216, h: 84, code: 'IS', title: 'Isolation Mode', sub: 'ตัดวงจรเบรก • พขร.100%', tone: 'error', dashed: true }),
-              nodeBox({ id: 'NP', x: 578, y: 256, w: 150, h: 80, code: 'NP', title: 'No Power (Reset)', sub: 'QSY: EB ~80 วินาที', tone: 'error' }),
-              nodeBox({ id: 'SB', x: 788, y: 256, w: 130, h: 80, code: 'SB', title: 'Stand By', sub: 'เริ่ม SOM ใหม่', tone: 'neutral' })
+              nodeBox({ id: 'FS', x: 40, y: 74, w: 232, h: 96, code: 'ANY MODE', title: 'กำลังใช้งาน ETCS', sub: '(SL/NL จำ fault ไว้ก่อน)', tone: 'primary' }),
+              nodeBox({ id: 'SF', x: 412, y: 74, w: 244, h: 96, code: 'SF', title: 'System Failure', sub: 'EB ถาวร • ห้ามเดินรถต่อ', tone: 'error' }),
+              nodeBox({ id: 'NP', x: 804, y: 74, w: 212, h: 96, code: 'NP', title: 'No Power', sub: 'Off ATPB เพื่อรีเซ็ต', tone: 'neutral' }),
+              nodeBox({ id: 'TR', x: 40, y: 324, w: 232, h: 96, code: 'ALL MODES', title: 'ทุกโหมด (รวม SF / TR)', sub: 'สวิตช์มีซีล + บันทึก JRU', tone: 'neutral' }),
+              nodeBox({ id: 'IS', x: 412, y: 324, w: 244, h: 96, code: 'IS', title: 'Isolation Mode', sub: 'ตัดวงจรเบรก • พขร. 100%', tone: 'error', dashed: true }),
+              nodeBox({ id: 'NP', x: 804, y: 324, w: 212, h: 96, code: 'NP', title: 'No Power (Reset)', sub: 'QSY: EB ~80 วินาที', tone: 'error' }),
+              nodeBox({ id: 'SB', x: 1120, y: 324, w: 160, h: 96, code: 'SB', title: 'Stand By', sub: 'เริ่ม SOM ใหม่', tone: 'neutral' })
             ].join('');
 
             return `<svg viewBox="${vb}" class="svg-diagram" role="img" aria-labelledby="svg-title-7"><title id="svg-title-7">เวิร์กโฟลว์ขัดข้องและตัดระบบ</title>${markerDefs()}${zones}${edges}${nodes}</svg>`;
@@ -1568,8 +1635,7 @@
 
       let activeCaseIdx = 0;
       let activeNodeId = CASES[0].defaultNode;
-      // Zoom mode: 'fit' (100% container width) or numeric percentage (100..180 based on 860px)
-      let zoomMode = window.innerWidth < 768 ? 'fit' : '100';
+      let zoomMode = 'custom';
       let zoomPercent = 100;
 
       const tabsBar = document.getElementById('tabsBar');
@@ -1604,7 +1670,6 @@
       const inspExit = document.getElementById('inspExit');
       const inspRefs = document.getElementById('inspRefs');
 
-      // Theme persistence
       function getEffectiveTheme() {
         const explicit = document.documentElement.getAttribute('data-theme');
         if (explicit === 'dark' || explicit === 'light') return explicit;
@@ -1641,13 +1706,53 @@
           svg.style.minWidth = '0px';
           zoomStatus.textContent = 'Fit';
         } else {
-          const px = Math.round(860 * (zoomPercent / 100));
+          const px = Math.round(980 * (zoomPercent / 100));
           svg.style.width = zoomPercent === 100 ? '100%' : `${px}px`;
           svg.style.minWidth = `${px}px`;
           zoomStatus.textContent = `${zoomPercent}%`;
         }
         zoomFitBtn.classList.toggle('is-active', zoomMode === 'fit');
         zoom100Btn.classList.toggle('is-active', zoomMode === 'custom' && zoomPercent === 100);
+      }
+
+      function fitSvgLabels() {
+        const svg = diagramHost.querySelector('svg');
+        if (!svg) return;
+
+        // Auto-fit edge label pills to exact rendered text bbox so Thai text never overflows
+        svg.querySelectorAll('.edge-label').forEach(group => {
+          const textGroup = group.querySelector('.edge-label-text');
+          const bg = group.querySelector('.edge-label-bg');
+          if (!textGroup || !bg || typeof textGroup.getBBox !== 'function') return;
+          try {
+            const b = textGroup.getBBox();
+            if (b && b.width > 0 && b.height > 0) {
+              bg.setAttribute('x', (b.x - 8).toFixed(1));
+              bg.setAttribute('y', (b.y - 5).toFixed(1));
+              bg.setAttribute('width', (b.width + 16).toFixed(1));
+              bg.setAttribute('height', (b.height + 10).toFixed(1));
+            }
+          } catch (_) {}
+        });
+
+        // Safety net: shrink node text slightly if OS font renders wider than box
+        svg.querySelectorAll('.svg-node').forEach(node => {
+          const boxW = Number(node.getAttribute('data-box-w') || 0);
+          if (!boxW) return;
+          const maxW = boxW - 18;
+          ['.node-title', '.node-sub'].forEach(sel => {
+            const el = node.querySelector(sel);
+            if (!el || typeof el.getBBox !== 'function') return;
+            try {
+              const baseSize = Number(el.getAttribute('font-size') || 13);
+              let curSize = baseSize;
+              while (curSize > 11 && el.getBBox().width > maxW) {
+                curSize -= 0.5;
+                el.setAttribute('font-size', String(curSize));
+              }
+            } catch (_) {}
+          });
+        });
       }
 
       zoomFitBtn.addEventListener('click', () => {
@@ -1680,12 +1785,6 @@
         }
         applyZoom();
       });
-
-      // Normalize initial desktop mode label
-      if (zoomMode === '100') {
-        zoomMode = 'custom';
-        zoomPercent = 100;
-      }
 
       function renderTabs() {
         tabsBar.innerHTML = CASES.map((c, idx) => `
@@ -1783,6 +1882,7 @@
 
         diagramHost.innerHTML = c.renderSvg();
         applyZoom();
+        fitSvgLabels();
 
         diagramHost.querySelectorAll('.svg-node').forEach(node => {
           const nid = node.dataset.nodeId;
@@ -1813,7 +1913,21 @@
         }
       });
 
-      selectCase(0);
+      function resolveInitialTab() {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const tab = params.get('tab');
+          if (tab !== null) {
+            const asNum = Number(tab);
+            if (!Number.isNaN(asNum) && asNum >= 0 && asNum < CASES.length) return asNum;
+            const byId = CASES.findIndex(c => c.id === tab);
+            if (byId >= 0) return byId;
+          }
+        } catch (_) {}
+        return 0;
+      }
+
+      selectCase(resolveInitialTab());
     })();
   </script>
 </body>
